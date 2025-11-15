@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/welcome_background"
+    android:padding="24dp">
+
+    <!-- App Logo/Title at the top -->
+<TextView
+android:id="@+id/app_title"
+android:layout_width="wrap_content"
+android:layout_height="wrap_content"
+android:text="TRACKD"
+android:textColor="@color/white"
+android:textSize="48sp"
+android:textStyle="bold"
+android:letterSpacing="0.1"
+app:layout_constraintTop_toTopOf="parent"
+app:layout_constraintStart_toStartOf="parent"
+app:layout_constraintEnd_toEndOf="parent"
+android:layout_marginTop="100dp" />
+
+    <!-- Buttons Container at the bottom -->
+<LinearLayout
+android:id="@+id/buttons_container"
+android:layout_width="0dp"
+android:layout_height="wrap_content"
+android:orientation="vertical"
+app:layout_constraintBottom_toBottomOf="parent"
+app:layout_constraintStart_toStartOf="parent"
+app:layout_constraintEnd_toEndOf="parent"
+android:layout_marginBottom="50dp">
+
+<!-- Join Trackd Button -->
+<com.google.android.material.button.MaterialButton
+    android:id="@+id/get_started_button"
+    android:layout_width="match_parent"
+    android:layout_height="56dp"
+    android:text="Join Trackd"
+    android:textSize="16sp"
+    android:textStyle="bold"
+    android:backgroundTint="@color/join_trackd_button"
+    android:textColor="@color/black"
+    app:cornerRadius="28dp" />
+
+<!-- Spacing between buttons -->
+<View
+    android:layout_width="match_parent"
+    android:layout_height="16dp" />
+
+<!-- Sign In Button -->
+<com.google.android.material.button.MaterialButton
+    android:id="@+id/sign_in_button"
+    android:layout_width="match_parent"
+    android:layout_height="56dp"
+    android:text="Sign in"
+    android:textSize="16sp"
+    android:textStyle="bold"
+    android:backgroundTint="@color/sign_in_button"
+    android:textColor="@color/white"
+    app:cornerRadius="28dp" />
+
+</LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>

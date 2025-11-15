@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="140dp"
+    android:orientation="horizontal"
+    android:padding="8dp"
+    android:background="@color/grey_800"
+    android:layout_margin="8dp">
+
+    <!-- Skeleton for music poster -->
+    <View
+        android:layout_width="80dp"
+        android:layout_height="120dp"
+        android:background="@color/grey_700"
+        android:layout_marginEnd="12dp" />
+
+    <!-- Skeleton for review content -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <!-- Skeleton for title -->
+        <View
+            android:layout_width="120dp"
+            android:layout_height="20dp"
+            android:background="@color/grey_700"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Skeleton for timestamp -->
+        <View
+            android:layout_width="80dp"
+            android:layout_height="16dp"
+            android:background="@color/grey_700"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Skeleton for review text lines -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="16dp"
+            android:background="@color/grey_700"
+            android:layout_marginBottom="4dp" />
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="16dp"
+            android:background="@color/grey_700"
+            android:layout_marginBottom="4dp" />
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="16dp"
+            android:background="@color/grey_700"
+            android:layout_marginEnd="60dp" />
+
+    </LinearLayout>
+
+</LinearLayout>

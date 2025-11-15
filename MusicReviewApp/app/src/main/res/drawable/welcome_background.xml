@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Background Image -->
+    <item>
+        <bitmap
+            android:src="@drawable/welcome_bg"
+            android:gravity="center|fill" />
+    </item>
+
+    <!-- Dark overlay to ensure text is readable -->
+    <item>
+        <color android:color="#80000000" /> <!-- Semi-transparent black overlay -->
+    </item>
+</layer-list>

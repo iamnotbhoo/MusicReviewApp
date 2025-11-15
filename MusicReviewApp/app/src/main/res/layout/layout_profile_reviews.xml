@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingBottom="8dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="REVIEWS"
+            android:textSize="14sp"
+            android:textColor="@color/grey_400"
+            android:textStyle="bold" />
+
+        <!-- You can add a "SEE ALL" button here if needed -->
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/no_profile_reviews_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="This user hasn't reviewed any music yet."
+        android:textSize="14sp"
+        android:textColor="@color/grey_400"
+        android:paddingTop="8dp"
+        android:visibility="gone" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/profile_reviews_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="8dp" />
+
+</LinearLayout>

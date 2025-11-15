@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:padding="4dp">
+
+    <ImageView
+        android:id="@+id/profile_poster_image"
+        android:layout_width="140dp"
+        android:layout_height="200dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/ic_music_note"
+        android:background="@color/grey_800"
+        android:clickable="true"
+        android:focusable="true" />
+
+    <LinearLayout
+        android:id="@+id/profile_buttons_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center"
+        android:layout_marginBottom="8dp"
+        android:orientation="horizontal"
+        android:background="@color/black"
+        android:visibility="gone"
+        android:padding="4dp">
+
+        <student.projects.musicreviewapp.components.buttons.FavouriteButton
+            android:id="@+id/profile_favourite_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <student.projects.musicreviewapp.components.buttons.ListenButton
+            android:id="@+id/profile_listen_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+
+</FrameLayout>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/no_reviews_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Write the first review!"
+        android:textSize="14sp"
+        android:textColor="@color/grey_400"
+        android:paddingBottom="16dp" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/reviews_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="16dp" />
+
+    <EditText
+        android:id="@+id/review_input"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:hint="Write your review..."
+        android:background="@color/grey_800"
+        android:textColor="@color/white"
+        android:textColorHint="@color/grey_400"
+        android:padding="8dp" />
+
+    <TextView
+        android:id="@+id/submit_review_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:text="Submit Review"
+        android:textColor="@color/white"
+        android:background="@color/grey_700"
+        android:padding="8dp"
+        android:layout_marginTop="8dp"
+        android:clickable="true"
+        android:focusable="true" />
+
+</LinearLayout>

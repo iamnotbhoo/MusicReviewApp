@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/music_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Song Title"
+        android:textSize="24sp"
+        android:textColor="@color/white"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/music_artist"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Artist Name"
+        android:textSize="18sp"
+        android:textColor="@color/white"
+        android:paddingTop="4dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingTop="8dp">
+
+        <TextView
+            android:id="@+id/music_year"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="2023"
+            android:textSize="14sp"
+            android:textColor="@color/grey_400" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=" • "
+            android:textSize="14sp"
+            android:textColor="@color/grey_400" />
+
+        <TextView
+            android:id="@+id/music_album"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Album Name"
+            android:textSize="14sp"
+            android:textColor="@color/grey_400" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/music_description"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Song description goes here..."
+        android:textSize="14sp"
+        android:textColor="@color/grey_400"
+        android:paddingTop="16dp" />
+
+    <student.projects.musicreviewapp.components.music.MusicCast
+        android:id="@+id/music_cast"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="16dp" />
+
+</LinearLayout>

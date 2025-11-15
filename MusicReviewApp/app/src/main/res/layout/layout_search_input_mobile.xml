@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="16dp"
+    android:background="@color/grey_800">
+
+    <EditText
+        android:id="@+id/search_input_mobile"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:hint="Search music..."
+        android:textSize="16sp"
+        android:textColor="@color/white"
+        android:textColorHint="@color/grey_400"
+        android:background="@color/grey_700"
+        android:padding="12dp"
+        android:imeOptions="actionSearch"
+        android:inputType="text" />
+
+    <ImageView
+        android:id="@+id/search_icon_mobile"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:src="@drawable/ic_search"
+        android:padding="12dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?attr/selectableItemBackground" />
+
+</LinearLayout>

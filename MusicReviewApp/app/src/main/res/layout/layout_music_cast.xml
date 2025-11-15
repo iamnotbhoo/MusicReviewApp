@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="FEATURED ARTISTS"
+        android:textSize="14sp"
+        android:textColor="@color/grey_400"
+        android:paddingBottom="8dp" />
+
+    <TextView
+        android:id="@+id/no_cast_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="The artists for this song remain a mystery..."
+        android:textSize="12sp"
+        android:textColor="@color/grey_400" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/cast_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+</LinearLayout>
