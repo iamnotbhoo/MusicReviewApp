@@ -12,13 +12,16 @@ import android.widget.PopupWindow
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.bumptech.glide.Glide
 import student.projects.musicreviewapp.R
 import student.projects.musicreviewapp.auth.AuthManager
 import student.projects.musicreviewapp.models.Music
+import student.projects.musicreviewapp.network.SpotifyApiService
 
 class HomeFragment : Fragment() {
 
     private lateinit var authManager: AuthManager
+    private lateinit var spotifyApiService: SpotifyApiService
     private lateinit var albumsIndicator: View
     private lateinit var reviewsIndicator: View
     private lateinit var listsIndicator: View
@@ -28,11 +31,17 @@ class HomeFragment : Fragment() {
 
     private var menuPopup: PopupWindow? = null
 
+    // Spotify data
+    private var recommendedAlbums = listOf<Music>()
+    private var popularAlbums = listOf<Music>()
+    private var trendingAlbums = listOf<Music>()
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         authManager = AuthManager(requireContext())
+        spotifyApiService = SpotifyApiService(requireContext())
         return inflater.inflate(R.layout.fragment_home_signed_in, container, false)
     }
 
@@ -41,10 +50,56 @@ class HomeFragment : Fragment() {
         setupNavigationBar(view)
         setupTabBar(view)
         setupContentSections(view)
-        populateAlbumSections(view)
+
+        // Load Spotify data
+        loadSpotifyData()
 
         // Set initial state - Albums tab active
         setActiveTab(Tab.ALBUMS)
+    }
+
+    private fun loadSpotifyData() {
+        // Load recommended albums
+        spotifyApiService.getRecommendedAlbums(object : SpotifyApiService.SpotifyCallback<List<Music>> {
+            override fun onSuccess(result: List<Music>) {
+                recommendedAlbums = result
+                populateAlbumSections()
+            }
+            override fun onError(error: String) {
+                showToast("Failed to load recommended albums")
+                // Fallback to mock data
+                recommendedAlbums = getPopularMusic().take(8)
+                populateAlbumSections()
+            }
+        })
+
+        // Load popular albums
+        spotifyApiService.getPopularAlbums(object : SpotifyApiService.SpotifyCallback<List<Music>> {
+            override fun onSuccess(result: List<Music>) {
+                popularAlbums = result
+                populateAlbumSections()
+            }
+            override fun onError(error: String) {
+                showToast("Failed to load popular albums")
+                // Fallback to mock data
+                popularAlbums = getPopularMusic().shuffled().take(7)
+                populateAlbumSections()
+            }
+        })
+
+        // Load trending albums
+        spotifyApiService.getTrendingAlbums(object : SpotifyApiService.SpotifyCallback<List<Music>> {
+            override fun onSuccess(result: List<Music>) {
+                trendingAlbums = result
+                populateAlbumSections()
+            }
+            override fun onError(error: String) {
+                showToast("Failed to load trending albums")
+                // Fallback to mock data
+                trendingAlbums = getPopularMusic().shuffled().take(7)
+                populateAlbumSections()
+            }
+        })
     }
 
     private fun setupNavigationBar(view: View) {
@@ -86,12 +141,10 @@ class HomeFragment : Fragment() {
             menuPopup?.dismiss()
         }
 
-        // Playlist
+        // Playlist - FIXED: Changed SetOnClickListener to setOnClickListener
         menuView.findViewById<View>(R.id.menu_playlist).setOnClickListener {
             menuPopup?.dismiss()
             showToast("Playlist feature coming soon!")
-            // Navigate to playlist page when created
-            // findNavController().navigate(R.id.playlistFragment)
         }
 
         // Lists - switch to lists tab
@@ -104,8 +157,6 @@ class HomeFragment : Fragment() {
         menuView.findViewById<View>(R.id.menu_diary).setOnClickListener {
             menuPopup?.dismiss()
             showToast("Diary feature coming soon!")
-            // Navigate to diary page when created
-            // findNavController().navigate(R.id.diaryFragment)
         }
 
         // Reviews - switch to reviews tab
@@ -118,16 +169,12 @@ class HomeFragment : Fragment() {
         menuView.findViewById<View>(R.id.menu_activity).setOnClickListener {
             menuPopup?.dismiss()
             showToast("Activity feature coming soon!")
-            // Navigate to activity page when created
-            // findNavController().navigate(R.id.activityFragment)
         }
 
         // Settings
         menuView.findViewById<View>(R.id.menu_settings).setOnClickListener {
             menuPopup?.dismiss()
             showToast("Settings feature coming soon!")
-            // Navigate to settings page when created
-            // findNavController().navigate(R.id.settingsFragment)
         }
 
         // Sign Out
@@ -173,9 +220,6 @@ class HomeFragment : Fragment() {
         albumsContent = view.findViewById(R.id.albums_content)
         reviewsContent = view.findViewById(R.id.reviews_content)
         listsContent = view.findViewById(R.id.lists_content)
-
-        // Remove placeholder setup since we're using actual layouts now
-        // setupReviewsContent() and setupListsContent() are no longer needed
     }
 
     private fun setActiveTab(activeTab: Tab) {
@@ -206,35 +250,31 @@ class HomeFragment : Fragment() {
         }
     }
 
-    // Remove these methods since we're using actual layouts now
-    // private fun setupReviewsContent() { ... }
-    // private fun setupListsContent() { ... }
+    private fun populateAlbumSections() {
+        view?.let {
+            val popularWeekContainer = it.findViewById<LinearLayout>(R.id.popular_week_container)
+            val newFriendsContainer = it.findViewById<LinearLayout>(R.id.new_friends_container)
+            val popularFriendsContainer = it.findViewById<LinearLayout>(R.id.popular_friends_container)
 
-    private fun populateAlbumSections(view: View) {
-        val popularWeekContainer = view.findViewById<LinearLayout>(R.id.popular_week_container)
-        val newFriendsContainer = view.findViewById<LinearLayout>(R.id.new_friends_container)
-        val popularFriendsContainer = view.findViewById<LinearLayout>(R.id.popular_friends_container)
+            // Clear existing views
+            popularWeekContainer.removeAllViews()
+            newFriendsContainer.removeAllViews()
+            popularFriendsContainer.removeAllViews()
 
-        val popularMusic = getPopularMusic()
+            // Populate "Popular this week" with recommended albums
+            recommendedAlbums.take(4).forEach { music ->
+                popularWeekContainer.addView(createAlbumView(music))
+            }
 
-        // Clear existing views
-        popularWeekContainer.removeAllViews()
-        newFriendsContainer.removeAllViews()
-        popularFriendsContainer.removeAllViews()
+            // Populate "New from friends" with popular albums
+            popularAlbums.take(4).forEach { music ->
+                newFriendsContainer.addView(createAlbumView(music))
+            }
 
-        // Populate "Popular this week"
-        popularMusic.take(4).forEach { music ->
-            popularWeekContainer.addView(createAlbumView(music))
-        }
-
-        // Populate "New from friends"
-        popularMusic.reversed().take(4).forEach { music ->
-            newFriendsContainer.addView(createAlbumView(music))
-        }
-
-        // Populate "Popular with friends"
-        popularMusic.shuffled().take(4).forEach { music ->
-            popularFriendsContainer.addView(createAlbumView(music))
+            // Populate "Popular with friends" with trending albums
+            trendingAlbums.take(4).forEach { music ->
+                popularFriendsContainer.addView(createAlbumView(music))
+            }
         }
     }
 
@@ -246,14 +286,23 @@ class HomeFragment : Fragment() {
             ).apply { marginEnd = dpToPx(10) }
 
             scaleType = ImageView.ScaleType.CENTER_CROP
-            setImageResource(R.drawable.rounded_album)  // placeholder
             clipToOutline = true
             background = resources.getDrawable(R.drawable.rounded_album, null)
+
+            // Load album cover using Glide
+            if (music.coverImage.isNotEmpty()) {
+                Glide.with(requireContext())
+                    .load(music.coverImage)
+                    .placeholder(R.drawable.album_placeholder)
+                    .error(R.drawable.album_placeholder)
+                    .into(this)
+            } else {
+                setImageResource(R.drawable.album_placeholder)
+            }
 
             setOnClickListener { showAlbumDetails(music) }
         }
     }
-
 
     private fun showAlbumDetails(music: Music) {
         val message = "${music.title}\nby ${music.artist}\n${music.album} (${music.releaseYear})\n" +
@@ -296,18 +345,6 @@ class HomeFragment : Fragment() {
     private fun dpToPx(dp: Int): Int {
         val density = resources.displayMetrics.density
         return (dp * density).toInt()
-    }
-
-    private fun getRandomColor(): Int {
-        val colors = listOf(
-            0xFF6B4E71.toInt(), // Purple
-            0xFF4A5B6A.toInt(), // Blue grey
-            0xFF8B6F47.toInt(), // Brown
-            0xFF5A7C5A.toInt(), // Green
-            0xFF8B5A5A.toInt(), // Red
-            0xFF5A5A8B.toInt()  // Dark blue
-        )
-        return colors.random()
     }
 
     private fun getPopularMusic(): List<Music> {

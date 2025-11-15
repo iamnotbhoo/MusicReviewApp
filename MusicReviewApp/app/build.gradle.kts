@@ -52,6 +52,9 @@ dependencies {
     implementation("androidx.recyclerview:recyclerview:1.3.2")
     implementation("androidx.cardview:cardview:1.0.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
+    implementation ("com.android.volley:volley:1.2.1")
+    implementation ("com.github.bumptech.glide:glide:4.16.0")
+    implementation("androidx.biometric:biometric:1.2.0-alpha03")
 
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
