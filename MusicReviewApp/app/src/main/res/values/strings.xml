@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">MusicReviewApp</string>
+    <string name="album_poster">Album poster</string>
+    <string name="back">Back</string>
 </resources>

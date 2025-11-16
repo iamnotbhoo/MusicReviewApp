@@ -11,6 +11,8 @@
     <color name="grey_800">#FF424242</color>
     <color name="grey_700">#FF616161</color>
     <color name="grey_600">#FF757575</color>
+    <color name="gray_400">#FFB0B0B0</color>
+    <color name="orange_500">#FFE67E22</color>
     <color name="join_trackd_button">#FFF5F5F5</color>
     <color name="sign_in_button">#FF86739E</color>
     <color name="purple_link">#FF882DFF</color>

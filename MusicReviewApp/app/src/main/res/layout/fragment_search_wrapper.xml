@@ -2,17 +2,50 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:padding="16dp">
 
     <student.projects.musicreviewapp.components.searching.SearchInputMobile
         android:id="@+id/search_input_component"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
+    <!-- Loading Indicator -->
+    <ProgressBar
+        android:id="@+id/loading_indicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="32dp"
+        android:visibility="gone" />
+
+    <!-- Search Prompt -->
+    <TextView
+        android:id="@+id/search_prompt_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:gravity="center"
+        android:text="Search for artists, albums, or songs"
+        android:textColor="#666"
+        android:textSize="16sp" />
+
+    <!-- Empty State -->
+    <TextView
+        android:id="@+id/empty_state_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:gravity="center"
+        android:textColor="#666"
+        android:textSize="16sp"
+        android:visibility="gone" />
+
+    <!-- Search Results -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/search_results_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="16dp" />
+        android:layout_marginTop="16dp" />
 
 </LinearLayout>

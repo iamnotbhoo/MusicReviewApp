@@ -10,8 +10,6 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 import student.projects.musicreviewapp.R
 
 class MusicReviews @JvmOverloads constructor(
@@ -25,15 +23,13 @@ class MusicReviews @JvmOverloads constructor(
     private lateinit var reviewInput: EditText
     private lateinit var submitButton: TextView
 
-    private val auth = Firebase.auth
-    private val reviewsAdapter = ReviewsAdapter(emptyList())
+    private val reviewsAdapter = MusicReviewAdapter(emptyList())
 
     var onSubmitReview: ((String) -> Unit)? = null
 
     init {
         LayoutInflater.from(context).inflate(R.layout.layout_music_reviews, this, true)
         setupViews()
-        setupAuthentication()
     }
 
     private fun setupViews() {
@@ -56,19 +52,7 @@ class MusicReviews @JvmOverloads constructor(
         }
     }
 
-    private fun setupAuthentication() {
-        if (auth.currentUser == null) {
-            reviewInput.visibility = View.GONE
-            submitButton.visibility = View.GONE
-            noReviewsText.text = "Login and write the first review!"
-        } else {
-            reviewInput.visibility = View.VISIBLE
-            submitButton.visibility = View.VISIBLE
-            noReviewsText.text = "Write the first review!"
-        }
-    }
-
-    fun setReviews(reviews: List<Review>) {
+    fun setReviews(reviews: List<MusicReview>) {
         if (reviews.isEmpty()) {
             noReviewsText.visibility = View.VISIBLE
             reviewsRecyclerView.visibility = View.GONE
@@ -80,7 +64,8 @@ class MusicReviews @JvmOverloads constructor(
     }
 }
 
-data class Review(
+// Separate data class to avoid conflicts
+data class MusicReview(
     val id: String,
     val userId: String,
     val userName: String,
@@ -89,8 +74,8 @@ data class Review(
     val timestamp: String
 )
 
-class ReviewsAdapter(private var reviews: List<Review>) :
-    RecyclerView.Adapter<ReviewsAdapter.ReviewViewHolder>() {
+class MusicReviewAdapter(private var reviews: List<MusicReview>) :
+    RecyclerView.Adapter<MusicReviewAdapter.ReviewViewHolder>() {
 
     class ReviewViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val userName: TextView = itemView.findViewById(R.id.review_user_name)
@@ -100,7 +85,7 @@ class ReviewsAdapter(private var reviews: List<Review>) :
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReviewViewHolder {
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_review, parent, false)
+            .inflate(R.layout.layout_music_review_item, parent, false)
         return ReviewViewHolder(view)
     }
 
@@ -113,7 +98,7 @@ class ReviewsAdapter(private var reviews: List<Review>) :
 
     override fun getItemCount(): Int = reviews.size
 
-    fun updateData(newReviews: List<Review>) {
+    fun updateData(newReviews: List<MusicReview>) {
         reviews = newReviews
         notifyDataSetChanged()
     }

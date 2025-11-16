@@ -62,12 +62,31 @@
         android:label="Home"
         tools:layout="@layout/fragment_home_signed_in">
 
-        <!-- ADD THIS ACTION FOR SIGN OUT -->
         <action
             android:id="@+id/action_homeFragment_to_welcomeFragment"
             app:destination="@id/welcomeFragment"
             app:popUpTo="@id/welcomeFragment"
             app:popUpToInclusive="true" />
+
+        <action
+            android:id="@+id/action_homeFragment_to_albumDetailFragment"
+            app:destination="@id/albumDetailFragment" />
+
+        <action
+            android:id="@+id/action_homeFragment_to_playlistFragment"
+            app:destination="@id/playlistFragment" />
+
+        <action
+            android:id="@+id/action_homeFragment_to_userListsFragment"
+            app:destination="@id/userListsFragment" />
+
+        <action
+            android:id="@+id/action_homeFragment_to_diaryFragment"
+            app:destination="@id/diaryFragment" />
+
+        <action
+            android:id="@+id/action_homeFragment_to_userReviewsFragment"
+            app:destination="@id/userReviewsFragment" />
 
     </fragment>
 
@@ -75,7 +94,13 @@
         android:id="@+id/searchFragment"
         android:name="student.projects.musicreviewapp.ui.home.SearchFragment"
         android:label="Search"
-        tools:layout="@layout/fragment_search_wrapper" />
+        tools:layout="@layout/fragment_search_wrapper">
+
+        <action
+            android:id="@+id/action_searchFragment_to_albumDetailFragment"
+            app:destination="@id/albumDetailFragment" />
+
+    </fragment>
 
     <fragment
         android:id="@+id/profileFragment"
@@ -83,10 +108,194 @@
         android:label="Profile"
         tools:layout="@layout/fragment_profile" />
 
+    <action
+        android:id="@+id/action_profileFragment_to_welcomeFragment"
+        app:destination="@id/welcomeFragment"
+        app:popUpTo="@id/welcomeFragment"
+        app:popUpToInclusive="true" />
+
+    <action
+        android:id="@+id/action_profileFragment_to_diaryFragment"
+        app:destination="@id/diaryFragment" />
+
+    <action
+        android:id="@+id/action_profileFragment_to_userListsFragment"
+        app:destination="@id/userListsFragment" />
+
+    <action
+        android:id="@+id/action_profileFragment_to_playlistFragment"
+        app:destination="@id/playlistFragment" />
+
+    <action
+        android:id="@+id/action_profileFragment_to_favoriteAlbumsFragment"
+        app:destination="@id/favoriteAlbumsFragment" />
+
     <fragment
         android:id="@+id/reviewsPageFragment"
         android:name="student.projects.musicreviewapp.ui.home.ReviewsPageFragment"
         android:label="Reviews"
         tools:layout="@layout/fragment_reviews_page" />
+
+    <!-- Album Detail Fragment -->
+    <fragment
+        android:id="@+id/albumDetailFragment"
+        android:name="student.projects.musicreviewapp.ui.home.AlbumDetailFragment"
+        android:label="Album Details"
+        tools:layout="@layout/fragment_album_detail">
+
+        <argument
+            android:name="album"
+            app:argType="student.projects.musicreviewapp.models.Music" />
+
+        <!-- ADD THIS ACTION -->
+        <action
+            android:id="@+id/action_albumDetailFragment_to_reviewFragment"
+            app:destination="@id/reviewFragment" />
+
+    </fragment>
+
+    <!-- Review Fragment -->
+    <fragment
+        android:id="@+id/reviewFragment"
+        android:name="student.projects.musicreviewapp.ui.home.ReviewFragment"
+        android:label="Review"
+        tools:layout="@layout/fragment_review">
+
+        <argument
+            android:name="album"
+            app:argType="student.projects.musicreviewapp.models.Music" />
+    </fragment>
+
+    <action
+        android:id="@+id/action_profileFragment_to_userReviewsFragment"
+        app:destination="@id/userReviewsFragment" />
+
+    <fragment
+        android:id="@+id/userReviewsFragment"
+        android:name="student.projects.musicreviewapp.ui.home.UserReviewsFragment"
+        android:label="Reviews"
+        tools:layout="@layout/fragment_user_reviews" />
+
+    <!-- User Albums Fragment -->
+    <action
+        android:id="@+id/action_profileFragment_to_userAlbumsFragment"
+        app:destination="@id/userAlbumsFragment" />
+
+    <action
+        android:id="@+id/action_userAlbumsFragment_to_reviewDetailFragment"
+        app:destination="@id/reviewDetailFragment" />
+
+    <fragment
+        android:id="@+id/userAlbumsFragment"
+        android:name="student.projects.musicreviewapp.ui.home.UserAlbumsFragment"
+        android:label="Albums"
+        tools:layout="@layout/fragment_user_albums" />
+
+    <!-- Diary Fragment -->
+    <fragment
+        android:id="@+id/diaryFragment"
+        android:name="student.projects.musicreviewapp.ui.home.DiaryFragment"
+        android:label="Diary"
+        tools:layout="@layout/fragment_diary">
+
+        <action
+            android:id="@+id/action_diaryFragment_to_reviewDetailFragment"
+            app:destination="@id/reviewDetailFragment" />
+
+
+    </fragment>
+
+    <!-- Review Detail Fragment -->
+
+    <action
+        android:id="@+id/action_userReviewsFragment_to_reviewDetailFragment"
+        app:destination="@id/reviewDetailFragment" />
+
+    <fragment
+        android:id="@+id/reviewDetailFragment"
+        android:name="student.projects.musicreviewapp.ui.home.ReviewDetailFragment"
+        android:label="Review"
+        tools:layout="@layout/fragment_review_detail">
+
+        <argument
+            android:name="review"
+            app:argType="student.projects.musicreviewapp.models.Review" />
+
+    </fragment>
+
+
+    <!-- Lists -->
+    <fragment
+        android:id="@+id/userListsFragment"
+        android:name="student.projects.musicreviewapp.ui.home.UserListsFragment"
+        android:label="Lists"
+        tools:layout="@layout/fragment_user_lists">
+
+        <action
+            android:id="@+id/action_userListsFragment_to_listDetailFragment"
+            app:destination="@id/listDetailFragment" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/listDetailFragment"
+        android:name="student.projects.musicreviewapp.ui.home.ListDetailFragment"
+        android:label="List Detail"
+        tools:layout="@layout/fragment_list_detail">
+
+        <argument
+            android:name="userList"
+            app:argType="student.projects.musicreviewapp.models.UserList" />
+
+        <action
+            android:id="@+id/action_listDetailFragment_to_albumDetailFragment"
+            app:destination="@id/albumDetailFragment" />
+
+    </fragment>
+
+    <!-- Playlist Fragment -->
+    <fragment
+        android:id="@+id/playlistFragment"
+        android:name="student.projects.musicreviewapp.ui.home.PlaylistFragment"
+        android:label="Playlist"
+        tools:layout="@layout/fragment_playlist">
+
+        <action
+            android:id="@+id/action_playlistFragment_to_albumDetailFragment"
+            app:destination="@id/albumDetailFragment" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/favoriteAlbumsFragment"
+        android:name="student.projects.musicreviewapp.ui.home.FavoriteAlbumsFragment"
+        android:label="Favorite Albums"
+        tools:layout="@layout/fragment_favorite_albums">
+
+        <action
+            android:id="@+id/action_favoriteAlbumsFragment_to_albumSearchFragment"
+            app:destination="@id/albumSearchFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/albumSearchFragment"
+        android:name="student.projects.musicreviewapp.ui.home.AlbumSearchFragment"
+        android:label="Search Albums"
+        tools:layout="@layout/fragment_album_search">
+
+        <argument
+            android:name="position"
+            app:argType="integer" />
+    </fragment>
+
+    <!-- From AlbumDetailFragment to ReviewFragment -->
+    <action
+        android:id="@+id/action_albumDetailFragment_to_reviewFragment"
+        app:destination="@id/reviewFragment" />
+
+    <!-- From ReviewFragment back to AlbumDetailFragment -->
+    <action
+        android:id="@+id/action_reviewFragment_to_albumDetailFragment"
+        app:destination="@id/albumDetailFragment" />
 
 </navigation>

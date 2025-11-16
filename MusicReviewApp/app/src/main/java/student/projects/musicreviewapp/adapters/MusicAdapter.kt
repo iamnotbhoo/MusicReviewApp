@@ -9,6 +9,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import student.projects.musicreviewapp.R
 import student.projects.musicreviewapp.models.Music
+import com.bumptech.glide.Glide
 
 class MusicAdapter(private var musicList: List<Music>) :
     RecyclerView.Adapter<MusicAdapter.MusicViewHolder>() {
@@ -33,21 +34,31 @@ class MusicAdapter(private var musicList: List<Music>) :
     override fun onBindViewHolder(holder: MusicViewHolder, position: Int) {
         val music = musicList[position]
 
-        holder.title.text = music.title
-        holder.artist.text = music.artist
+        // Display album title and artist
+        holder.title.text = music.title // This should be the album name
+        holder.artist.text = music.artist // This is the artist name
         holder.rating.rating = (music.averageRating / 2).toFloat()
         holder.reviewCount.text = "${music.reviewCount} reviews"
 
         // Show overview if available (for filter results)
         holder.overview?.text = music.album ?: "No description available"
 
+        // Load album cover using Glide - FIXED: Make sure we're loading the image
+        if (music.coverImage.isNotEmpty()) {
+            Glide.with(holder.itemView.context)
+                .load(music.coverImage)
+                .placeholder(R.drawable.album_placeholder)
+                .error(R.drawable.album_placeholder)
+                .into(holder.coverImage)
+        } else {
+            // If no cover image, use placeholder
+            holder.coverImage.setImageResource(R.drawable.album_placeholder)
+        }
+
         // Set click listener
         holder.itemView.setOnClickListener {
             onItemClickListener?.invoke(music)
         }
-
-        // Load image using Glide or Picasso
-        // Glide.with(holder.itemView.context).load(music.coverImage).into(holder.coverImage)
     }
 
     override fun getItemCount(): Int = musicList.size

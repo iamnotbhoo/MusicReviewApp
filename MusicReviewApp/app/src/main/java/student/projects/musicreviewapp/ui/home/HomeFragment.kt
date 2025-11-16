@@ -114,11 +114,14 @@ class HomeFragment : Fragment() {
         // Inflate the menu layout
         val menuView = LayoutInflater.from(requireContext()).inflate(R.layout.navigation_drawer, null)
 
-        // Create the popup window
+        // REMOVED: Hide the Activity menu item
+        menuView.findViewById<View>(R.id.menu_activity).visibility = View.GONE
+
+        // Create the popup window with FIXED dimensions
         menuPopup = PopupWindow(
             menuView,
-            ViewGroup.LayoutParams.WRAP_CONTENT,
-            ViewGroup.LayoutParams.MATCH_PARENT,
+            280.dpToPx(requireContext()), // Fixed width of 280dp
+            ViewGroup.LayoutParams.MATCH_PARENT, // Full height
             true
         ).apply {
             // Set background to make it look like a proper drawer
@@ -126,12 +129,17 @@ class HomeFragment : Fragment() {
             elevation = 16f
             animationStyle = R.style.MenuAnimation
 
-            // Show the menu
-            showAsDropDown(anchorView, -anchorView.width, -anchorView.height, Gravity.START)
+            // Show the menu from the left edge
+            showAtLocation(anchorView, Gravity.START, 0, 0)
         }
 
         // Set up menu item click listeners
         setupMenuClickListeners(menuView)
+    }
+
+    // Add this extension function for dp to px conversion
+    private fun Int.dpToPx(context: android.content.Context): Int {
+        return (this * context.resources.displayMetrics.density).toInt()
     }
 
     private fun setupMenuClickListeners(menuView: View) {
@@ -141,41 +149,32 @@ class HomeFragment : Fragment() {
             menuPopup?.dismiss()
         }
 
-        // Playlist - FIXED: Changed SetOnClickListener to setOnClickListener
+        // Playlist - Navigate to playlist page
         menuView.findViewById<View>(R.id.menu_playlist).setOnClickListener {
             menuPopup?.dismiss()
-            showToast("Playlist feature coming soon!")
+            findNavController().navigate(R.id.action_homeFragment_to_playlistFragment)
         }
 
-        // Lists - switch to lists tab
+        // Lists - Navigate to user lists page
         menuView.findViewById<View>(R.id.menu_lists).setOnClickListener {
             menuPopup?.dismiss()
-            setActiveTab(Tab.LISTS)
+            findNavController().navigate(R.id.action_homeFragment_to_userListsFragment)
         }
 
-        // Diary
+        // Diary - Navigate to diary page
         menuView.findViewById<View>(R.id.menu_diary).setOnClickListener {
             menuPopup?.dismiss()
-            showToast("Diary feature coming soon!")
+            findNavController().navigate(R.id.action_homeFragment_to_diaryFragment)
         }
 
-        // Reviews - switch to reviews tab
+        // Reviews - Navigate to user reviews page
         menuView.findViewById<View>(R.id.menu_reviews).setOnClickListener {
             menuPopup?.dismiss()
-            setActiveTab(Tab.REVIEWS)
+            findNavController().navigate(R.id.action_homeFragment_to_userReviewsFragment)
         }
 
-        // Activity
-        menuView.findViewById<View>(R.id.menu_activity).setOnClickListener {
-            menuPopup?.dismiss()
-            showToast("Activity feature coming soon!")
-        }
+        // REMOVED: Activity menu item
 
-        // Settings
-        menuView.findViewById<View>(R.id.menu_settings).setOnClickListener {
-            menuPopup?.dismiss()
-            showToast("Settings feature coming soon!")
-        }
 
         // Sign Out
         menuView.findViewById<View>(R.id.menu_sign_out).setOnClickListener {
@@ -300,46 +299,16 @@ class HomeFragment : Fragment() {
                 setImageResource(R.drawable.album_placeholder)
             }
 
-            setOnClickListener { showAlbumDetails(music) }
+            // Navigate to album detail page
+            setOnClickListener { navigateToAlbumDetail(music) }
         }
     }
 
-    private fun showAlbumDetails(music: Music) {
-        val message = "${music.title}\nby ${music.artist}\n${music.album} (${music.releaseYear})\n" +
-                "Rating: ${music.averageRating}/5.0 (${music.reviewCount} reviews)"
-
-        android.app.AlertDialog.Builder(requireContext())
-            .setTitle(music.title)
-            .setMessage(message)
-            .setPositiveButton("Rate") { _, _ ->
-                showRatingDialog(music)
-            }
-            .setNegativeButton("Close", null)
-            .show()
-    }
-
-    private fun showRatingDialog(music: Music) {
-        val ratingOptions = arrayOf(
-            "⭐️ (1 Star)",
-            "⭐️⭐️ (2 Stars)",
-            "⭐️⭐️⭐️ (3 Stars)",
-            "⭐️⭐️⭐️⭐️ (4 Stars)",
-            "⭐️⭐️⭐️⭐️⭐️ (5 Stars)"
-        )
-
-        android.app.AlertDialog.Builder(requireContext())
-            .setTitle("Rate ${music.title}")
-            .setMessage("How would you rate ${music.title} by ${music.artist}?")
-            .setItems(ratingOptions) { dialog, which ->
-                val stars = which + 1
-                showToast("Rated ${music.title} $stars stars!")
-                dialog.dismiss()
-            }
-            .setNegativeButton("Cancel") { dialog, _ ->
-                dialog.dismiss()
-            }
-            .create()
-            .show()
+    private fun navigateToAlbumDetail(music: Music) {
+        val bundle = Bundle().apply {
+            putParcelable("album", music)
+        }
+        findNavController().navigate(R.id.action_homeFragment_to_albumDetailFragment, bundle)
     }
 
     private fun dpToPx(dp: Int): Int {

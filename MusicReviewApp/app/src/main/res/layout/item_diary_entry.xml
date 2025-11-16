@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:paddingTop="12dp"
+    android:paddingBottom="12dp"
+    android:background="?attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true">
+
+    <!-- Day Number -->
+    <TextView
+        android:id="@+id/day_number"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:text="18"
+        android:textColor="#212121"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:background="@drawable/circle_background"
+        android:layout_marginEnd="16dp" />
+
+    <!-- Album Info -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <!-- Album Title -->
+        <TextView
+            android:id="@+id/album_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="A Night At The Opera"
+            android:textColor="#212121"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="2dp" />
+
+        <!-- Album Year -->
+        <TextView
+            android:id="@+id/album_year"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="1975"
+            android:textColor="#757575"
+            android:textSize="14sp"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Star Rating and Review Icon -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <!-- Star Rating -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginEnd="8dp">
+
+                <ImageView
+                    android:id="@+id/star1"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/ic_star"
+                    android:layout_marginEnd="2dp" />
+
+                <ImageView
+                    android:id="@+id/star2"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/ic_star"
+                    android:layout_marginEnd="2dp" />
+
+                <ImageView
+                    android:id="@+id/star3"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/ic_star"
+                    android:layout_marginEnd="2dp" />
+
+                <ImageView
+                    android:id="@+id/star4"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/ic_star"
+                    android:layout_marginEnd="2dp" />
+
+                <ImageView
+                    android:id="@+id/star5"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/ic_star" />
+
+            </LinearLayout>
+
+            <!-- Review Icon (three lines) -->
+            <ImageView
+                android:id="@+id/review_icon"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@drawable/ic_review_lines"
+                app:tint="#9B8FAA" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

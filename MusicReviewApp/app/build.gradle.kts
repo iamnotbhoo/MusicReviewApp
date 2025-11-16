@@ -2,6 +2,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("kotlin-kapt")
+    id ("kotlin-parcelize")
 }
 
 android {
@@ -55,6 +56,9 @@ dependencies {
     implementation ("com.android.volley:volley:1.2.1")
     implementation ("com.github.bumptech.glide:glide:4.16.0")
     implementation("androidx.biometric:biometric:1.2.0-alpha03")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.8.0")
+    implementation("androidx.core:core-ktx:1.12.0")
+    implementation("com.google.code.gson:gson:2.10.1")
 
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:32.7.0"))

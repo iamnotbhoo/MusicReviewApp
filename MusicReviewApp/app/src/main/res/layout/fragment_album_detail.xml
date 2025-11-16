@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/album_detail_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF">
+
+    <!-- Loading -->
+    <ProgressBar
+        android:id="@+id/loading_indicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone" />
+
+    <!-- ==========================================================
+         CONTENT CONTAINER
+         ========================================================== -->
+    <LinearLayout
+        android:id="@+id/content_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <!-- ======= POSTER AREA ======= -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="260dp">
+
+            <!-- Poster -->
+            <ImageView
+                android:id="@+id/album_poster"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:contentDescription="@string/album_poster" />
+
+            <!-- Fade (increased height - prevents leaking) -->
+            <View
+                android:id="@+id/poster_fade"
+                android:layout_width="match_parent"
+                android:layout_height="110dp"
+                android:layout_gravity="bottom"
+                android:background="@drawable/poster_fade" />
+
+            <!-- Back button -->
+            <ImageView
+                android:id="@+id/back_button"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginStart="12dp"
+                android:layout_marginTop="12dp"
+                android:src="@drawable/ic_arrow_back"
+                android:contentDescription="@string/back"
+                app:tint="#FFFFFF" />
+
+            <!-- Menu -->
+            <ImageView
+                android:id="@+id/menu_button"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_gravity="top|end"
+                android:layout_marginTop="12dp"
+                android:layout_marginEnd="12dp"
+                android:src="@drawable/ic_more_vert"
+                android:contentDescription="Menu"
+                app:tint="#FFFFFF" />
+
+        </FrameLayout>
+
+        <!-- ==========================================================
+             Scrollable content (clean transition, no poster leak)
+             ========================================================== -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingTop="-10dp"
+            android:paddingBottom="24dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="24dp"
+                android:paddingEnd="24dp"
+                android:paddingTop="12dp">
+
+                <!-- Row: text left + thumbnail right -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/label_artist"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="ARTIST"
+                            android:textColor="#555555"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/artist_name"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="#555555"
+                            android:textSize="18sp"
+                            android:layout_marginTop="6dp" />
+
+                        <TextView
+                            android:id="@+id/album_year_duration"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="#808080"
+                            android:textSize="13sp"
+                            android:layout_marginTop="8dp" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:id="@+id/album_thumbnail"
+                        android:layout_width="84dp"
+                        android:layout_height="112dp"
+                        android:layout_marginStart="12dp"
+                        android:scaleType="centerCrop"
+                        android:background="@drawable/rounded_album" />
+                </LinearLayout>
+
+                <!-- ALBUM DESCRIPTION SECTION -->
+                <TextView
+                    android:id="@+id/desc_heading"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="ALBUM DESCRIPTION"
+                    android:textColor="#555555"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="22dp" />
+
+                <TextView
+                    android:id="@+id/album_description"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="#B0B0B0"
+                    android:textSize="14sp"
+                    android:lineSpacingExtra="4dp"
+                    android:layout_marginTop="12dp" />
+
+                <!-- LABEL SECTION -->
+                <TextView
+                    android:id="@+id/label_heading"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="LABEL"
+                    android:textColor="#555555"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="22dp" />
+
+                <TextView
+                    android:id="@+id/album_label"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="#B0B0B0"
+                    android:textSize="14sp"
+                    android:lineSpacingExtra="4dp"
+                    android:layout_marginTop="12dp" />
+
+                <!-- Rating label -->
+                <TextView
+                    android:id="@+id/ratings_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="RATINGS"
+                    android:textColor="#555555"
+                    android:textStyle="bold"
+                    android:textSize="14sp"
+                    android:layout_marginTop="26dp" />
+
+                <!-- Histogram row -->
+                <LinearLayout
+                    android:id="@+id/histogram_row"
+                    android:layout_width="match_parent"
+                    android:layout_height="120dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="10dp">
+
+                    <LinearLayout
+                        android:id="@+id/histogram_container"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal"
+                        android:gravity="bottom"
+                        android:weightSum="10"
+                        android:paddingStart="4dp"
+                        android:paddingEnd="4dp" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:layout_marginStart="12dp">
+
+                        <TextView
+                            android:id="@+id/album_rating_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="#555555"
+                            android:textStyle="bold"
+                            android:textSize="20sp" />
+
+                        <TextView
+                            android:id="@+id/rating_stars_note"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="★★★★★"
+                            android:textSize="12sp"
+                            android:layout_marginTop="6dp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#1F1F1F"
+                    android:layout_marginTop="18dp" />
+
+                <!-- Footer -->
+                <LinearLayout
+                    android:id="@+id/review_footer"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:background="#151515"
+                    android:layout_marginTop="18dp"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:visibility="gone">
+
+                    <ImageView
+                        android:id="@+id/footer_album_cover"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:background="@drawable/rounded_album" />
+
+                    <TextView
+                        android:id="@+id/footer_review_text"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:textColor="#B0B0B0"
+                        android:textSize="14sp"
+                        android:layout_marginStart="12dp" />
+
+                    <TextView
+                        android:id="@+id/footer_review_stars"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="#808080"
+                        android:textSize="13sp" />
+                </LinearLayout>
+
+            </LinearLayout>
+        </ScrollView>
+
+    </LinearLayout>
+
+</FrameLayout>

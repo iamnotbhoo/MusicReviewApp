@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:padding="20dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/popup_center_bg">
+
+    <!-- LISTEN -->
+    <LinearLayout
+        android:id="@+id/action_listen"
+        android:orientation="horizontal"
+        android:paddingVertical="12dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/icon_listen"
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:src="@drawable/ic_listen"
+            app:tint="#808080"/>
+
+        <TextView
+            android:id="@+id/text_listen"
+            android:text="Listen"
+            android:textSize="16sp"
+            android:textColor="#000000"
+            android:layout_marginStart="14dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
+
+    <!-- LIKE -->
+    <LinearLayout
+        android:id="@+id/action_like"
+        android:orientation="horizontal"
+        android:paddingVertical="12dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/icon_like"
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:src="@drawable/ic_heart"
+            app:tint="#808080"/>
+
+        <TextView
+            android:id="@+id/text_like"
+            android:text="Like"
+            android:textSize="16sp"
+            android:textColor="#000000"
+            android:layout_marginStart="14dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
+
+    <!-- PLAYLIST -->
+    <LinearLayout
+        android:id="@+id/action_add_to_playlist"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true">
+
+        <ImageView
+            android:id="@+id/icon_add_to_playlist"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_add"
+            android:layout_marginEnd="16dp"
+            app:tint="@color/gray_400" />
+
+        <TextView
+            android:id="@+id/text_add_to_playlist"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Add to Playlist"
+            android:textColor="@color/gray_400"
+            android:textSize="16sp" />
+
+    </LinearLayout>
+
+    <!-- RATE TITLE -->
+    <TextView
+        android:text="Rate"
+        android:textSize="15sp"
+        android:textColor="#000000"
+        android:layout_marginTop="10dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <!-- RATING STARS -->
+    <LinearLayout
+        android:id="@+id/rating_container"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <ImageView android:id="@+id/star1" android:layout_width="30dp" android:layout_height="30dp" android:src="@drawable/ic_star" app:tint="#808080"/>
+        <ImageView android:id="@+id/star2" android:layout_width="30dp" android:layout_height="30dp" android:src="@drawable/ic_star" app:tint="#808080" android:layout_marginStart="8dp"/>
+        <ImageView android:id="@+id/star3" android:layout_width="30dp" android:layout_height="30dp" android:src="@drawable/ic_star" app:tint="#808080" android:layout_marginStart="8dp"/>
+        <ImageView android:id="@+id/star4" android:layout_width="30dp" android:layout_height="30dp" android:src="@drawable/ic_star" app:tint="#808080" android:layout_marginStart="8dp"/>
+        <ImageView android:id="@+id/star5" android:layout_width="30dp" android:layout_height="30dp" android:src="@drawable/ic_star" app:tint="#808080" android:layout_marginStart="8dp"/>
+    </LinearLayout>
+
+    <!-- REVIEW -->
+    <LinearLayout
+        android:id="@+id/action_review"
+        android:orientation="horizontal"
+        android:paddingVertical="12dp"
+        android:layout_marginTop="14dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:src="@drawable/ic_note"
+            app:tint="#808080"/>
+
+        <TextView
+            android:text="Review / Log"
+            android:textSize="16sp"
+            android:textColor="#000000"
+            android:layout_marginStart="14dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
+
+    <!-- LISTS -->
+    <LinearLayout
+        android:id="@+id/action_lists"
+        android:orientation="horizontal"
+        android:paddingVertical="12dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:src="@drawable/ic_list"
+            app:tint="#000000"/>
+
+        <TextView
+            android:text="Add to Lists"
+            android:textSize="16sp"
+            android:textColor="#000000"
+            android:layout_marginStart="14dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
+
+    <!-- DONE -->
+    <TextView
+        android:id="@+id/action_done"
+        android:text="Done"
+        android:textSize="17sp"
+        android:textStyle="bold"
+        android:textColor="#6200EE"
+        android:paddingVertical="16dp"
+        android:gravity="center"
+        android:layout_marginTop="4dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+</LinearLayout>
