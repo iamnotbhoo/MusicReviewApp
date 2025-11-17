@@ -88,7 +88,17 @@
             android:id="@+id/action_homeFragment_to_userReviewsFragment"
             app:destination="@id/userReviewsFragment" />
 
+        <action
+            android:id="@+id/action_homeFragment_to_reviewDetailFragment"
+            app:destination="@id/reviewDetailFragment" />
+
+        <action
+            android:id="@+id/action_homeFragment_to_listDetailFragment"
+            app:destination="@id/listDetailFragment" />
+
     </fragment>
+
+
 
     <fragment
         android:id="@+id/searchFragment"
@@ -134,6 +144,10 @@
         android:id="@+id/action_profileFragment_to_albumDetailFragment"
         app:destination="@id/albumDetailFragment" />
 
+    <action
+        android:id="@+id/action_profileFragment_to_likesFragment"
+        app:destination="@id/likesFragment" />
+
     <fragment
         android:id="@+id/reviewsPageFragment"
         android:name="student.projects.musicreviewapp.ui.home.ReviewsPageFragment"
@@ -154,6 +168,10 @@
         <action
             android:id="@+id/action_albumDetailFragment_to_reviewFragment"
             app:destination="@id/reviewFragment" />
+
+        <action
+            android:id="@+id/action_albumDetailFragment_to_createListFragment"
+            app:destination="@id/createListFragment" />
 
     </fragment>
 
@@ -323,6 +341,28 @@
         android:id="@+id/addEntriesFragment"
         android:name="student.projects.musicreviewapp.ui.home.AddEntriesFragment"
         android:label="Add Albums" />
+
+
+    <fragment
+        android:id="@+id/likesFragment"
+        android:name="student.projects.musicreviewapp.ui.home.LikesFragment"
+        android:label="Likes"
+        tools:layout="@layout/fragment_likes">
+
+        <action
+            android:id="@+id/action_likesFragment_to_albumDetailFragment"
+            app:destination="@id/albumDetailFragment" />
+
+        <action
+            android:id="@+id/action_likesFragment_to_reviewDetailFragment"
+            app:destination="@id/reviewDetailFragment" />
+
+        <action
+            android:id="@+id/action_likesFragment_to_listDetailFragment"
+            app:destination="@id/listDetailFragment" />
+    </fragment>
+
+
 
 
 </navigation>

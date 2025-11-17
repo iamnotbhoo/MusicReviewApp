@@ -24,6 +24,8 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import student.projects.musicreviewapp.R
 import student.projects.musicreviewapp.auth.AuthManager
 import student.projects.musicreviewapp.auth.FavoriteAlbumsManager
+import student.projects.musicreviewapp.auth.LikeManager
+import student.projects.musicreviewapp.auth.ListManager
 import student.projects.musicreviewapp.auth.PlaylistManager
 import student.projects.musicreviewapp.auth.ReviewManager
 import student.projects.musicreviewapp.models.Music
@@ -35,6 +37,8 @@ class ProfileFragment : Fragment() {
     private lateinit var favoriteAlbumsManager: FavoriteAlbumsManager
     private lateinit var reviewManager: ReviewManager
     private lateinit var playlistManager: PlaylistManager
+
+    private lateinit var likeManager: LikeManager
 
     private val favoritesAdapter = AlbumGridAdapter()
     private val recentActivityAdapter = RecentActivityAdapter()
@@ -72,6 +76,7 @@ class ProfileFragment : Fragment() {
         favoriteAlbumsManager = FavoriteAlbumsManager(requireContext())
         reviewManager = ReviewManager(requireContext())
         playlistManager = PlaylistManager(requireContext())
+        likeManager = LikeManager(requireContext())
 
         setupViews(view)
         setupProfileStats(view)
@@ -337,7 +342,7 @@ class ProfileFragment : Fragment() {
         }
 
         view.findViewById<View>(R.id.likes_row)?.setOnClickListener {
-            navigateToComingSoon("Likes")
+            findNavController().navigate(R.id.action_profileFragment_to_likesFragment)
         }
 
         // Set initial stats
@@ -346,19 +351,31 @@ class ProfileFragment : Fragment() {
 
     private fun updateProfileStats(view: View) {
         // Get real data from managers
+        val reviewManager = ReviewManager(requireContext())
+        val favoriteAlbumsManager = FavoriteAlbumsManager(requireContext())
+        val playlistManager = PlaylistManager(requireContext())
+        val listManager = ListManager(requireContext())
+        val likeManager = LikeManager(requireContext())
+
         val reviewCount = reviewManager.getReviews().size
         val favoriteCount = favoriteAlbumsManager.getFavoriteAlbums().size
         val playlistCount = playlistManager.getPlaylist().size
-        val listCount = 0 // No lists initially
+        val actualListCount = listManager.getLists().size
         val currentYear = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)
+
+        // Calculate actual likes count
+        val likedAlbumsCount = likeManager.getLikedAlbums().size
+        val likedReviewsCount = likeManager.getLikedReviews().size
+        val likedListsCount = likeManager.getLikedLists().size
+        val totalLikesCount = likedAlbumsCount + likedReviewsCount + likedListsCount
 
         // Update with real data
         view.findViewById<TextView>(R.id.albums_count)?.text = "$favoriteCount / $reviewCount this year"
         view.findViewById<TextView>(R.id.diary_count)?.text = "$reviewCount / $reviewCount this year"
         view.findViewById<TextView>(R.id.reviews_count)?.text = reviewCount.toString()
-        view.findViewById<TextView>(R.id.lists_count)?.text = listCount.toString() // Show 0 lists
+        view.findViewById<TextView>(R.id.lists_count)?.text = actualListCount.toString()
         view.findViewById<TextView>(R.id.playlists_count)?.text = playlistCount.toString()
-        view.findViewById<TextView>(R.id.likes_count)?.text = "520"
+        view.findViewById<TextView>(R.id.likes_count)?.text = totalLikesCount.toString() //
     }
 
     private fun navigateToFavoriteAlbumsManager() {

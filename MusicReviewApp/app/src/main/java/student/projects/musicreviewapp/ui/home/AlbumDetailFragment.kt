@@ -14,25 +14,32 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import android.view.WindowManager
+import android.widget.CheckBox
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.ImageViewCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import student.projects.musicreviewapp.R
 import student.projects.musicreviewapp.models.AlbumDetails
 import student.projects.musicreviewapp.models.Music
+import student.projects.musicreviewapp.models.UserList
+import student.projects.musicreviewapp.auth.ListManager
 import student.projects.musicreviewapp.auth.PlaylistManager
 import student.projects.musicreviewapp.auth.ReviewManager
 import student.projects.musicreviewapp.auth.AuthManager
 import student.projects.musicreviewapp.models.Review
 import student.projects.musicreviewapp.network.SpotifyApiService
 import android.content.res.ColorStateList
+import student.projects.musicreviewapp.auth.LikeManager
 import java.util.Calendar
 
 class AlbumDetailFragment : Fragment() {
@@ -45,6 +52,9 @@ class AlbumDetailFragment : Fragment() {
     private lateinit var playlistManager: PlaylistManager
     private lateinit var reviewManager: ReviewManager
     private lateinit var authManager: AuthManager
+    private lateinit var listManager: ListManager
+
+    private lateinit var likeManager: LikeManager
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -54,6 +64,8 @@ class AlbumDetailFragment : Fragment() {
         playlistManager = PlaylistManager(requireContext())
         reviewManager = ReviewManager(requireContext())
         authManager = AuthManager(requireContext())
+        listManager = ListManager(requireContext())
+        likeManager = LikeManager(requireContext())
         return inflater.inflate(R.layout.fragment_album_detail, container, false)
     }
 
@@ -198,8 +210,6 @@ class AlbumDetailFragment : Fragment() {
 
         return barLayout
     }
-
-
 
     private fun checkUserReviewStatus() {
         val reviewFooter = view?.findViewById<LinearLayout>(R.id.review_footer)
@@ -462,6 +472,7 @@ class AlbumDetailFragment : Fragment() {
         }
     }
 
+
     private fun showAlbumMenuPopup() {
         val dialog = Dialog(requireContext())
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -491,6 +502,13 @@ class AlbumDetailFragment : Fragment() {
         val addToPlaylistIcon = view.findViewById<ImageView>(R.id.icon_add_to_playlist)
         val addToPlaylistText = view.findViewById<TextView>(R.id.text_add_to_playlist)
 
+        // ADD TO LISTS button - NEW
+        val addToListsBtn = view.findViewById<LinearLayout>(R.id.action_add_to_lists)
+        addToListsBtn.setOnClickListener {
+            dialog.dismiss()
+            showAddToListsDialog()
+        }
+
         val stars = listOf(
             view.findViewById<ImageView>(R.id.star1),
             view.findViewById<ImageView>(R.id.star2),
@@ -498,6 +516,10 @@ class AlbumDetailFragment : Fragment() {
             view.findViewById<ImageView>(R.id.star4),
             view.findViewById<ImageView>(R.id.star5)
         )
+
+        // Check if album is already liked
+        val isAlbumLiked = likeManager.isAlbumLiked(album.id)
+        updateLikeButton(likeIcon, likeText, isAlbumLiked)
 
         // LISTEN toggle
         listenBtn.setOnClickListener {
@@ -511,15 +533,17 @@ class AlbumDetailFragment : Fragment() {
             }
         }
 
-        // LIKE toggle
+        // LIKE toggle - UPDATED TO USE LIKEMANAGER
         likeBtn.setOnClickListener {
-            val isLiked = likeIcon.imageTintList?.defaultColor == Color.parseColor("#E67E22")
+            val isLiked = likeManager.isAlbumLiked(album.id)
             if (isLiked) {
-                ImageViewCompat.setImageTintList(likeIcon, ColorStateList.valueOf(Color.GRAY))
-                likeText.text = "Like"
+                likeManager.unlikeAlbum(album.id)
+                updateLikeButton(likeIcon, likeText, false)
+                showToast("Removed from liked albums")
             } else {
-                ImageViewCompat.setImageTintList(likeIcon, ColorStateList.valueOf(Color.parseColor("#E67E22")))
-                likeText.text = "Liked"
+                likeManager.likeAlbum(album)
+                updateLikeButton(likeIcon, likeText, true)
+                showToast("Added to liked albums")
             }
         }
 
@@ -555,6 +579,76 @@ class AlbumDetailFragment : Fragment() {
         }
 
         dialog.show()
+    }
+
+    // Helper method to update like button appearance
+    private fun updateLikeButton(likeIcon: ImageView, likeText: TextView, isLiked: Boolean) {
+        if (isLiked) {
+            ImageViewCompat.setImageTintList(likeIcon, ColorStateList.valueOf(Color.parseColor("#E67E22")))
+            likeText.text = "Liked"
+        } else {
+            ImageViewCompat.setImageTintList(likeIcon, ColorStateList.valueOf(Color.GRAY))
+            likeText.text = "Like"
+        }
+    }
+
+    // NEW: Show Add to Lists dialog
+    private fun showAddToListsDialog() {
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_add_to_lists, null)
+        val dialog = AlertDialog.Builder(requireContext())
+            .setView(dialogView)
+            .create()
+
+        setupAddToListsDialog(dialogView, dialog)
+        dialog.show()
+    }
+
+    // NEW: Setup Add to Lists dialog
+    private fun setupAddToListsDialog(dialogView: View, dialog: AlertDialog) {
+        val lists = listManager.getLists()
+        val selectedLists = mutableSetOf<String>()
+
+        // Setup RecyclerView
+        val recyclerView = dialogView.findViewById<RecyclerView>(R.id.lists_recycler_view)
+        recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        val adapter = ListsDialogAdapter(lists, selectedLists) { listId, isChecked ->
+            if (isChecked) {
+                selectedLists.add(listId)
+            } else {
+                selectedLists.remove(listId)
+            }
+        }
+        recyclerView.adapter = adapter
+
+        // Create New List
+        dialogView.findViewById<View>(R.id.create_new_list).setOnClickListener {
+            dialog.dismiss()
+            navigateToCreateList()
+        }
+
+        // Cancel button
+        dialogView.findViewById<View>(R.id.cancel_button).setOnClickListener {
+            dialog.dismiss()
+        }
+
+        // Save button
+        dialogView.findViewById<View>(R.id.save_button).setOnClickListener {
+            selectedLists.forEach { listId ->
+                listManager.addAlbumToList(listId, album)
+            }
+            if (selectedLists.isNotEmpty()) {
+                showToast("Added to ${selectedLists.size} list${if (selectedLists.size > 1) "s" else ""}")
+            }
+            dialog.dismiss()
+        }
+    }
+
+    // NEW: Navigate to Create List with the current album
+    private fun navigateToCreateList() {
+        val bundle = Bundle().apply {
+            putParcelable("albumToAdd", album)
+        }
+        findNavController().navigate(R.id.action_albumDetailFragment_to_createListFragment, bundle)
     }
 
     private fun addToPlaylist() {
@@ -610,4 +704,44 @@ class AlbumDetailFragment : Fragment() {
     private fun showToast(message: String) {
         android.widget.Toast.makeText(requireContext(), message, android.widget.Toast.LENGTH_SHORT).show()
     }
+}
+
+// Add this class to your AlbumDetailFragment file
+class ListsDialogAdapter(
+    private val lists: List<UserList>,
+    private val selectedLists: Set<String>,
+    private val onListChecked: (String, Boolean) -> Unit
+) : RecyclerView.Adapter<ListsDialogAdapter.ListViewHolder>() {
+
+    class ListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val checkbox: CheckBox = itemView.findViewById(R.id.list_checkbox)
+        val listName: TextView = itemView.findViewById(R.id.list_name)
+        val listInfo: TextView = itemView.findViewById(R.id.list_info)
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ListViewHolder {
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.dialog_list_item, parent, false)
+        return ListViewHolder(view)
+    }
+
+    override fun onBindViewHolder(holder: ListViewHolder, position: Int) {
+        val list = lists[position]
+        val albumCount = list.albums.size
+
+        holder.listName.text = list.name
+        holder.listInfo.text = "$albumCount album${if (albumCount != 1) "s" else ""}"
+        holder.checkbox.isChecked = selectedLists.contains(list.id)
+
+        holder.itemView.setOnClickListener {
+            holder.checkbox.isChecked = !holder.checkbox.isChecked
+            onListChecked(list.id, holder.checkbox.isChecked)
+        }
+
+        holder.checkbox.setOnCheckedChangeListener { _, isChecked ->
+            onListChecked(list.id, isChecked)
+        }
+    }
+
+    override fun getItemCount(): Int = lists.size
 }

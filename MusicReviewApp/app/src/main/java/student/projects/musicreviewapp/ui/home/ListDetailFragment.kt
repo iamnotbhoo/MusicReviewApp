@@ -6,116 +6,165 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import student.projects.musicreviewapp.R
+import student.projects.musicreviewapp.auth.LikeManager
 import student.projects.musicreviewapp.auth.ListManager
 import student.projects.musicreviewapp.models.UserList
 import student.projects.musicreviewapp.models.Music
 
 class ListDetailFragment : Fragment() {
 
+    private lateinit var userList: UserList
     private lateinit var listManager: ListManager
-    private lateinit var currentList: UserList
-    private lateinit var albumsAdapter: AlbumsAdapter
+    private lateinit var likeManager: LikeManager
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         listManager = ListManager(requireContext())
-        arguments?.let { bundle ->
-            currentList = bundle.getParcelable("list") ?: return@let
-        }
+        likeManager = LikeManager(requireContext())
         return inflater.inflate(R.layout.fragment_list_detail, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        arguments?.let { bundle ->
+            userList = bundle.getParcelable("list") ?: return@let
+        }
+
         setupViews(view)
-        loadListData()
+        setupBackButton(view)
+        setupLikeButton(view)
+        setupAlbumsRecycler(view)
     }
 
     private fun setupViews(view: View) {
-        // Back button
+        // Set list info
+        view.findViewById<TextView>(R.id.list_title).text = userList.name
+        view.findViewById<TextView>(R.id.list_creator).text = "by ${userList.creator}"
+        view.findViewById<TextView>(R.id.list_description).text = userList.description
+
+        // Set likes count
+        view.findViewById<TextView>(R.id.likes_count).text = "${userList.likes} likes"
+
+        // Set creation date if available
+        val createdAtView = view.findViewById<TextView>(R.id.created_date)
+        createdAtView?.text = "Created ${userList.createdAt}"
+    }
+
+    private fun setupBackButton(view: View) {
         view.findViewById<ImageView>(R.id.back_button).setOnClickListener {
             findNavController().popBackStack()
         }
-
-        // Edit button
-        view.findViewById<ImageView>(R.id.edit_button).setOnClickListener {
-            // Navigate to edit list screen
-            // findNavController().navigate(R.id.editListFragment)
-        }
-
-        // Setup albums grid using existing item_album_grid layout
-        val albumsRecycler = view.findViewById<RecyclerView>(R.id.albums_recycler)
-        albumsRecycler.layoutManager = GridLayoutManager(requireContext(), 2) // Adjust span count as needed
-        albumsAdapter = AlbumsAdapter()
-        albumsRecycler.adapter = albumsAdapter
     }
 
-    private fun loadListData() {
-        requireView().findViewById<TextView>(R.id.list_name).text = currentList.name
+    private fun setupLikeButton(view: View) {
+        val likeButton = view.findViewById<ImageView>(R.id.like_icon)
+        val likeCountText = view.findViewById<TextView>(R.id.likes_count)
 
-        val albumCount = currentList.albums?.size ?: 0
-        requireView().findViewById<TextView>(R.id.album_count).text = "$albumCount album${if (albumCount != 1) "s" else ""}"
+        // Set initial state
+        val isLiked = likeManager.isListLiked(userList.id)
+        updateLikeButton(isLiked, userList.likes, likeButton, likeCountText)
 
-        // Calculate completion percentage
-        val completion = listManager.calculateListCompletion(currentList)
-        requireView().findViewById<TextView>(R.id.completion_percentage).text = "$completion%"
-
-        // Load albums
-        val albums = currentList.albums ?: emptyList()
-        albumsAdapter.submitList(albums)
-    }
-
-    private fun navigateToAddEntries() {
-        val bundle = Bundle().apply {
-            putString("listId", currentList.id)
-        }
-        findNavController().navigate(R.id.addEntriesFragment, bundle)
-    }
-    class AlbumsAdapter : RecyclerView.Adapter<AlbumsAdapter.AlbumViewHolder>() {
-
-        private var albums = listOf<Music>()
-
-        class AlbumViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-            val albumCover: ImageView = itemView.findViewById(R.id.album_cover) // Using existing ID from item_album_grid
-        }
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AlbumViewHolder {
-            val view = LayoutInflater.from(parent.context)
-                .inflate(R.layout.item_album_grid, parent, false) // Using existing layout
-            return AlbumViewHolder(view)
-        }
-
-        override fun onBindViewHolder(holder: AlbumViewHolder, position: Int) {
-            val album = albums[position]
-
-            // Check if coverImage exists and is not empty
-            val coverImage = album.coverImage
-            if (!coverImage.isNullOrEmpty()) {
-                Glide.with(holder.itemView.context)
-                    .load(coverImage)
-                    .placeholder(R.drawable.album_placeholder)
-                    .error(R.drawable.album_placeholder)
-                    .centerCrop()
-                    .into(holder.albumCover)
+        likeButton.setOnClickListener {
+            if (likeManager.isListLiked(userList.id)) {
+                // Unlike the list
+                likeManager.unlikeList(userList.id)
+                listManager.unlikeList(userList.id)
+                val newLikes = maxOf(0, userList.likes - 1)
+                updateLikeButton(false, newLikes, likeButton, likeCountText)
+                showToast("List unliked")
             } else {
-                holder.albumCover.setImageResource(R.drawable.album_placeholder)
+                // Like the list
+                likeManager.likeList(userList)
+                listManager.likeList(userList.id)
+                val newLikes = userList.likes + 1
+                updateLikeButton(true, newLikes, likeButton, likeCountText)
+                showToast("List liked")
             }
         }
+    }
 
-        override fun getItemCount(): Int = albums.size
+    private fun updateLikeButton(isLiked: Boolean, likeCount: Int, likeButton: ImageView, likeCountText: TextView) {
+        if (isLiked) {
+            likeButton.setImageResource(R.drawable.ic_heart_orange)
+            likeButton.setColorFilter(ContextCompat.getColor(requireContext(), R.color.orange_500))
+        } else {
+            likeButton.setImageResource(R.drawable.ic_heart)
+            likeButton.setColorFilter(ContextCompat.getColor(requireContext(), R.color.grey_400))
+        }
+        likeCountText.text = "$likeCount likes"
+    }
 
-        fun submitList(newAlbums: List<Music>) {
-            albums = newAlbums
-            notifyDataSetChanged()
+    private fun setupAlbumsRecycler(view: View) {
+        val albumsRecycler = view.findViewById<RecyclerView>(R.id.albums_recycler)
+        albumsRecycler.layoutManager = LinearLayoutManager(requireContext())
+
+        val adapter = ListAlbumsAdapter(userList.albums) { album ->
+            navigateToAlbumDetail(album)
+        }
+        albumsRecycler.adapter = adapter
+    }
+
+    private fun navigateToAlbumDetail(album: Music) {
+        val bundle = Bundle().apply {
+            putParcelable("album", album)
+        }
+        findNavController().navigate(R.id.action_listDetailFragment_to_albumDetailFragment, bundle)
+    }
+
+    private fun showToast(message: String) {
+        android.widget.Toast.makeText(requireContext(), message, android.widget.Toast.LENGTH_SHORT).show()
+    }
+}
+
+// Adapter for displaying albums in the list
+class ListAlbumsAdapter(
+    private val albums: List<Music>,
+    private val onAlbumClick: (Music) -> Unit
+) : RecyclerView.Adapter<ListAlbumsAdapter.AlbumViewHolder>() {
+
+    class AlbumViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val albumCover: ImageView = itemView.findViewById(R.id.album_cover)
+        val albumTitle: TextView = itemView.findViewById(R.id.album_title)
+        val artistName: TextView = itemView.findViewById(R.id.artist_name)
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AlbumViewHolder {
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_list_album, parent, false)
+        return AlbumViewHolder(view)
+    }
+
+    override fun onBindViewHolder(holder: AlbumViewHolder, position: Int) {
+        val album = albums[position]
+
+        // Load album cover
+        if (album.coverImage.isNotEmpty()) {
+            Glide.with(holder.itemView.context)
+                .load(album.coverImage)
+                .placeholder(R.drawable.album_placeholder)
+                .error(R.drawable.album_placeholder)
+                .into(holder.albumCover)
+        } else {
+            holder.albumCover.setImageResource(R.drawable.album_placeholder)
+        }
+
+        holder.albumTitle.text = album.title
+        holder.artistName.text = album.artist
+
+        holder.itemView.setOnClickListener {
+            onAlbumClick(album)
         }
     }
+
+    override fun getItemCount(): Int = albums.size
 }

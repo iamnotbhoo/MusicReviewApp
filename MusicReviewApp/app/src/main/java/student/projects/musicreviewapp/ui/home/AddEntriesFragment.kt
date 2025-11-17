@@ -17,8 +17,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import student.projects.musicreviewapp.R
 import student.projects.musicreviewapp.models.Music
+import student.projects.musicreviewapp.models.UserList
 import student.projects.musicreviewapp.network.SpotifyApiService
-import student.projects.musicreviewapp.models.AlbumDetails
 import android.widget.ProgressBar
 import android.widget.Toast
 
@@ -30,9 +30,10 @@ class AddEntriesFragment : Fragment() {
     private lateinit var searchRecycler: RecyclerView
     private lateinit var loadingIndicator: ProgressBar
     private lateinit var recentSearchesText: TextView
+    private lateinit var doneButton: TextView
 
-    // Store the list ID if you need to know which list we're adding to
-    private var currentListId: String? = null
+    private val selectedAlbums = mutableListOf<Music>()
+    private var tempList: UserList? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -40,9 +41,13 @@ class AddEntriesFragment : Fragment() {
     ): View? {
         spotifyApiService = SpotifyApiService(requireContext())
 
-        // Get list ID from arguments if passed
+        // Get temp list from arguments
         arguments?.let { bundle ->
-            currentListId = bundle.getString("listId")
+            tempList = bundle.getParcelable("tempList")
+            tempList?.albums?.let { albums ->
+                selectedAlbums.clear()
+                selectedAlbums.addAll(albums)
+            }
         }
 
         return inflater.inflate(R.layout.fragment_add_entries, container, false)
@@ -50,20 +55,22 @@ class AddEntriesFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         setupViews(view)
         setupSearch()
+        updateDoneButton()
     }
 
     private fun setupViews(view: View) {
         // Back button
         view.findViewById<ImageView>(R.id.back_button).setOnClickListener {
-            findNavController().popBackStack()
+            goBackToCreateList()
         }
 
-        // Cancel button
-        view.findViewById<TextView>(R.id.cancel_button).setOnClickListener {
-            findNavController().popBackStack()
+
+        // Done button
+        doneButton = view.findViewById<TextView>(R.id.done_button)
+        doneButton.setOnClickListener {
+            goBackToCreateList()
         }
 
         // Initialize views
@@ -74,9 +81,8 @@ class AddEntriesFragment : Fragment() {
 
         // Setup RecyclerView for search results
         searchRecycler.layoutManager = LinearLayoutManager(requireContext())
-        searchAdapter = SearchAdapter { album ->
-            // Add album to list and go back
-            addAlbumToList(album)
+        searchAdapter = SearchAdapter(selectedAlbums) { album ->
+            toggleAlbumSelection(album)
         }
         searchRecycler.adapter = searchAdapter
 
@@ -90,7 +96,7 @@ class AddEntriesFragment : Fragment() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             override fun afterTextChanged(s: Editable?) {
                 val query = s.toString()
-                if (query.length >= 2) { // Start searching after 2 characters
+                if (query.length >= 2) {
                     performSearch(query)
                 } else if (query.isEmpty()) {
                     showRecentSearches()
@@ -98,13 +104,10 @@ class AddEntriesFragment : Fragment() {
             }
         })
 
-        // Show recent searches initially
         showRecentSearches()
     }
 
     private fun showRecentSearches() {
-        // For now, show empty recent searches
-        // You can implement recent searches storage
         val recentSearches = emptyList<Music>()
         searchAdapter.submitList(recentSearches)
         recentSearchesText.visibility = View.VISIBLE
@@ -116,29 +119,59 @@ class AddEntriesFragment : Fragment() {
         recentSearchesText.visibility = View.GONE
         searchRecycler.visibility = View.VISIBLE
 
-        // Use the existing searchMusic method instead of searchAlbums
-        spotifyApiService.searchMusic(query, object : SpotifyApiService.SpotifyCallback<List<Music>> {
-            override fun onSuccess(result: List<Music>) {
-                hideLoading()
-                searchAdapter.submitList(result)
-                Log.d("SpotifySearch", "Search completed: ${result.size} results")
-            }
+        spotifyApiService.searchMusic(
+            query,
+            object : SpotifyApiService.SpotifyCallback<List<Music>> {
+                override fun onSuccess(result: List<Music>) {
+                    hideLoading()
+                    searchAdapter.submitList(result)
+                    Log.d("SpotifySearch", "Search completed: ${result.size} results")
+                }
 
-            override fun onError(error: String) {
-                hideLoading()
-                Toast.makeText(requireContext(), "Search failed: $error", Toast.LENGTH_SHORT).show()
-                searchAdapter.submitList(emptyList())
-            }
-        })
+                override fun onError(error: String) {
+                    hideLoading()
+                    Toast.makeText(requireContext(), "Search failed: $error", Toast.LENGTH_SHORT)
+                        .show()
+                    searchAdapter.submitList(emptyList())
+                }
+            })
     }
 
-    private fun addAlbumToList(album: Music) {
-        // Here you would add the album to the current list
-        // You'll need to pass the list ID and handle this in your ListManager
+    private fun toggleAlbumSelection(album: Music) {
+        val existingAlbum = selectedAlbums.find { it.id == album.id }
+        if (existingAlbum != null) {
+            selectedAlbums.remove(existingAlbum)
+            Toast.makeText(requireContext(), "Removed ${album.title}", Toast.LENGTH_SHORT).show()
+        } else {
+            selectedAlbums.add(album)
+            Toast.makeText(requireContext(), "Added ${album.title}", Toast.LENGTH_SHORT).show()
+        }
+        searchAdapter.updateSelectedAlbums(selectedAlbums)
+        updateDoneButton()
+    }
 
-        Toast.makeText(requireContext(), "Added ${album.title} to list", Toast.LENGTH_SHORT).show()
+    private fun updateDoneButton() {
+        if (selectedAlbums.isNotEmpty()) {
+            doneButton.text = "Done (${selectedAlbums.size})"
+            doneButton.isEnabled = true
+            doneButton.alpha = 1.0f
+        } else {
+            doneButton.text = "Done"
+            doneButton.isEnabled = true
+            doneButton.alpha = 1.0f
+        }
+    }
 
-        // Navigate back to list detail or stay for more additions
+    private fun goBackToCreateList() {
+        // Pass the selected albums back to CreateListFragment using Fragment Result API
+        val resultBundle = Bundle().apply {
+            putParcelableArrayList("selectedAlbums", ArrayList(selectedAlbums))
+        }
+
+        // Use setFragmentResult to pass data back
+        parentFragmentManager.setFragmentResult("addEntriesRequest", resultBundle)
+
+        // Navigate back
         findNavController().popBackStack()
     }
 
@@ -152,8 +185,12 @@ class AddEntriesFragment : Fragment() {
         searchRecycler.visibility = View.VISIBLE
     }
 
-    class SearchAdapter(private val onAlbumClick: (Music) -> Unit) :
-        RecyclerView.Adapter<SearchAdapter.SearchViewHolder>() {
+    // REMOVED THE NESTED AddEntriesFragment CLASS - THIS WAS THE PROBLEM
+
+    class SearchAdapter(
+        private var selectedAlbums: List<Music>,
+        private val onAlbumClick: (Music) -> Unit
+    ) : RecyclerView.Adapter<SearchAdapter.SearchViewHolder>() {
 
         private var albums = listOf<Music>()
 
@@ -167,12 +204,13 @@ class AddEntriesFragment : Fragment() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SearchViewHolder {
             val view = LayoutInflater.from(parent.context)
-                .inflate(R.layout.item_search_result, parent, false)
+                .inflate(R.layout.item_search_result_add, parent, false)
             return SearchViewHolder(view)
         }
 
         override fun onBindViewHolder(holder: SearchViewHolder, position: Int) {
             val album = albums[position]
+            val isSelected = selectedAlbums.any { it.id == album.id }
 
             holder.albumTitle.text = album.title
             holder.albumArtist.text = album.artist
@@ -190,12 +228,23 @@ class AddEntriesFragment : Fragment() {
                 holder.albumCover.setImageResource(R.drawable.album_placeholder)
             }
 
+            // Update selection UI - ONLY use the add button
+            if (isSelected) {
+                holder.addButton.setImageResource(R.drawable.ic_check)
+                holder.addButton.setColorFilter(holder.itemView.context.getColor(R.color.purple))
+                holder.itemView.setBackgroundColor(holder.itemView.context.getColor(R.color.sign_in_button))
+            } else {
+                holder.addButton.setImageResource(R.drawable.ic_add)
+                holder.addButton.setColorFilter(holder.itemView.context.getColor(android.R.color.darker_gray))
+                holder.itemView.setBackgroundColor(holder.itemView.context.getColor(android.R.color.transparent))
+            }
+
             // Add button click
             holder.addButton.setOnClickListener {
                 onAlbumClick(album)
             }
 
-            // Whole item click (optional)
+            // Whole item click
             holder.itemView.setOnClickListener {
                 onAlbumClick(album)
             }
@@ -205,6 +254,11 @@ class AddEntriesFragment : Fragment() {
 
         fun submitList(newAlbums: List<Music>) {
             albums = newAlbums
+            notifyDataSetChanged()
+        }
+
+        fun updateSelectedAlbums(newSelectedAlbums: List<Music>) {
+            selectedAlbums = newSelectedAlbums
             notifyDataSetChanged()
         }
     }

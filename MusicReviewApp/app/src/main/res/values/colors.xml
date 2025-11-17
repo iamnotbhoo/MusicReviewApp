@@ -16,4 +16,6 @@
     <color name="join_trackd_button">#FFF5F5F5</color>
     <color name="sign_in_button">#FF86739E</color>
     <color name="purple_link">#FF882DFF</color>
+    <color name="purple">#FF86739E</color>
+    <color name="divider_gray">#E0E0E0</color>
 </resources>

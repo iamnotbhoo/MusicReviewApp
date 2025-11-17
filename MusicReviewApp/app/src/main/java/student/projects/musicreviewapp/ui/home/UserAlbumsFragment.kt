@@ -153,27 +153,41 @@ class UserAlbumsFragment : Fragment() {
             val music = userAlbum.music
 
             // Load album cover
-            if (!music.coverImage.isNullOrEmpty()) {
-                try {
-                    val resourceId = holder.itemView.context.resources.getIdentifier(
-                        music.coverImage,
-                        "drawable",
-                        holder.itemView.context.packageName
-                    )
-                    if (resourceId != 0) {
-                        Glide.with(holder.itemView.context)
-                            .load(resourceId)
-                            .placeholder(R.drawable.album_placeholder)
-                            .error(R.drawable.album_placeholder)
-                            .into(holder.albumCover)
-                    } else {
-                        holder.albumCover.setImageResource(R.drawable.album_placeholder)
-                    }
-                } catch (e: Exception) {
+            when {
+                music.coverImage.isNullOrEmpty() -> {
                     holder.albumCover.setImageResource(R.drawable.album_placeholder)
                 }
-            } else {
-                holder.albumCover.setImageResource(R.drawable.album_placeholder)
+                music.coverImage.startsWith("http") -> {
+                    // Load from HTTP/HTTPS URL
+                    Glide.with(holder.itemView.context)
+                        .load(music.coverImage)
+                        .placeholder(R.drawable.album_placeholder)
+                        .error(R.drawable.album_placeholder)
+                        .centerCrop()
+                        .into(holder.albumCover)
+                }
+                else -> {
+                    // Try as local resource
+                    try {
+                        val resourceId = holder.itemView.context.resources.getIdentifier(
+                            music.coverImage,
+                            "drawable",
+                            holder.itemView.context.packageName
+                        )
+                        if (resourceId != 0) {
+                            Glide.with(holder.itemView.context)
+                                .load(resourceId)
+                                .placeholder(R.drawable.album_placeholder)
+                                .error(R.drawable.album_placeholder)
+                                .centerCrop()
+                                .into(holder.albumCover)
+                        } else {
+                            holder.albumCover.setImageResource(R.drawable.album_placeholder)
+                        }
+                    } catch (e: Exception) {
+                        holder.albumCover.setImageResource(R.drawable.album_placeholder)
+                    }
+                }
             }
 
             // Set text content

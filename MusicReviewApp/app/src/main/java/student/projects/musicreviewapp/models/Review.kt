@@ -13,11 +13,13 @@ data class Review(
     val timestamp: String = "",
     val musicId: String = "",
     val musicTitle: String = "",
+    val musicArtist: String? = null,
     val musicYear: String = "",
     val musicCoverUrl: String? = null,
     val rating: Int = 0,
     val tags: List<String> = emptyList(),
     val isFirstListen: Boolean = true,
     val allowReplies: Boolean = true,
-    val liked: Boolean = false
+    val liked: Boolean = false,
+    val likes: Int = 0
 ) : Parcelable

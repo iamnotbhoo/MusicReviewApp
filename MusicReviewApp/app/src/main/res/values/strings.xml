@@ -9,4 +9,6 @@
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
     <string name="view_album">View album details</string>
+    <string name="add_album">Add album</string>
+    <string name="like">Like</string>
 </resources>

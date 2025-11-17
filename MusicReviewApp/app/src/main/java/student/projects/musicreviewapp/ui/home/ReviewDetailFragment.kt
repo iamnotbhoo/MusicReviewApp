@@ -12,16 +12,22 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import student.projects.musicreviewapp.R
+import student.projects.musicreviewapp.auth.LikeManager
+import student.projects.musicreviewapp.auth.ReviewManager
 import student.projects.musicreviewapp.models.Review
 
 class ReviewDetailFragment : Fragment() {
 
     private lateinit var review: Review
+    private lateinit var likeManager: LikeManager
+    private lateinit var reviewManager: ReviewManager
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        likeManager = LikeManager(requireContext())
+        reviewManager = ReviewManager(requireContext())
         return inflater.inflate(R.layout.fragment_review_detail, container, false)
     }
 
@@ -67,14 +73,11 @@ class ReviewDetailFragment : Fragment() {
         // Set timestamp
         view.findViewById<TextView>(R.id.review_date).text = "Listened ${review.timestamp}"
 
-        // Set likes count
-        view.findViewById<TextView>(R.id.likes_count).text = "${getRandomLikes()} likes"
+        // Set likes count - use actual likes from review
+        view.findViewById<TextView>(R.id.likes_count).text = "${review.likes} likes"
 
         // Set star rating
         updateStarRating(view, review.rating)
-
-        // Set like button state
-        updateLikeButton(view, review.liked)
 
         // Setup bottom actions
         setupBottomActions(view)
@@ -87,28 +90,41 @@ class ReviewDetailFragment : Fragment() {
     }
 
     private fun setupLikeButton(view: View) {
-        val likeIcon = view.findViewById<ImageView>(R.id.like_icon)
-        val likesCount = view.findViewById<TextView>(R.id.likes_count)
+        val likeButton = view.findViewById<ImageView>(R.id.like_icon)
+        val likeCountText = view.findViewById<TextView>(R.id.likes_count)
 
-        likeIcon.setOnClickListener {
-            review = review.copy(liked = !review.liked)
-            updateLikeButton(view, review.liked)
+        // Set initial state
+        val isLiked = likeManager.isReviewLiked(review.id)
+        updateLikeButton(isLiked, review.likes, likeButton, likeCountText)
 
-            // Update likes count
-            val currentLikes = likesCount.text.toString().split(" ")[0].toIntOrNull() ?: 0
-            val newLikes = if (review.liked) currentLikes + 1 else currentLikes - 1
-            likesCount.text = "$newLikes likes"
+        likeButton.setOnClickListener {
+            if (likeManager.isReviewLiked(review.id)) {
+                // Unlike the review
+                likeManager.unlikeReview(review.id)
+                reviewManager.unlikeReview(review.id)
+                val newLikes = maxOf(0, review.likes - 1)
+                updateLikeButton(false, newLikes, likeButton, likeCountText)
+                showToast("Review unliked")
+            } else {
+                // Like the review
+                likeManager.likeReview(review)
+                reviewManager.likeReview(review.id)
+                val newLikes = review.likes + 1
+                updateLikeButton(true, newLikes, likeButton, likeCountText)
+                showToast("Review liked")
+            }
         }
     }
 
-    private fun updateLikeButton(view: View, liked: Boolean) {
-        val likeIcon = view.findViewById<ImageView>(R.id.like_icon)
-        val color = if (liked)
-            ContextCompat.getColor(requireContext(), R.color.orange_500)
-        else
-            ContextCompat.getColor(requireContext(), R.color.gray_400)
-
-        ImageViewCompat.setImageTintList(likeIcon, android.content.res.ColorStateList.valueOf(color))
+    private fun updateLikeButton(isLiked: Boolean, likeCount: Int, likeButton: ImageView, likeCountText: TextView) {
+        if (isLiked) {
+            likeButton.setImageResource(R.drawable.ic_heart_orange)
+            likeButton.setColorFilter(ContextCompat.getColor(requireContext(), R.color.orange_500))
+        } else {
+            likeButton.setImageResource(R.drawable.ic_heart)
+            likeButton.setColorFilter(ContextCompat.getColor(requireContext(), R.color.grey_400))
+        }
+        likeCountText.text = "$likeCount likes"
     }
 
     private fun updateStarRating(view: View, rating: Int) {
@@ -132,18 +148,16 @@ class ReviewDetailFragment : Fragment() {
     private fun setupBottomActions(view: View) {
         // Reply button
         view.findViewById<View>(R.id.reply_button).setOnClickListener {
-            // Show reply functionality
-            android.widget.Toast.makeText(requireContext(), "Reply feature coming soon", android.widget.Toast.LENGTH_SHORT).show()
+            showToast("Reply feature coming soon")
         }
 
         // Album button
         view.findViewById<View>(R.id.album_button).setOnClickListener {
-            // Navigate to album detail
-            android.widget.Toast.makeText(requireContext(), "Navigate to album", android.widget.Toast.LENGTH_SHORT).show()
+            showToast("Navigate to album")
         }
     }
 
-    private fun getRandomLikes(): Int {
-        return (3..15).random()
+    private fun showToast(message: String) {
+        android.widget.Toast.makeText(requireContext(), message, android.widget.Toast.LENGTH_SHORT).show()
     }
 }

@@ -54,10 +54,14 @@ class ProfileReviewsAdapter(private var reviews: List<Review>) :
     RecyclerView.Adapter<ProfileReviewsAdapter.ReviewViewHolder>() {
 
     class ReviewViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        // We'll use the same item_review layout for profile reviews
-        val userName: TextView = itemView.findViewById(R.id.review_user_name)
+        // Update to match the actual IDs in layout_music_review_item.xml
+        val userName: TextView = itemView.findViewById(R.id.user_name) // Changed from review_user_name
         val content: TextView = itemView.findViewById(R.id.review_content)
         val timestamp: TextView = itemView.findViewById(R.id.review_timestamp)
+        // You can also add other views if you're using them
+        val albumTitle: TextView = itemView.findViewById(R.id.album_title)
+        val albumYear: TextView = itemView.findViewById(R.id.album_year)
+        val likeCount: TextView = itemView.findViewById(R.id.like_count)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReviewViewHolder {

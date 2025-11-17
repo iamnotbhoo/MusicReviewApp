@@ -17,13 +17,19 @@ import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import student.projects.musicreviewapp.R
 import student.projects.musicreviewapp.auth.AuthManager
+import student.projects.musicreviewapp.auth.ListManager
+import student.projects.musicreviewapp.auth.ReviewManager
 import student.projects.musicreviewapp.models.Music
+import student.projects.musicreviewapp.models.Review
+import student.projects.musicreviewapp.models.UserList
 import student.projects.musicreviewapp.network.SpotifyApiService
 
 class HomeFragment : Fragment() {
 
     private lateinit var authManager: AuthManager
     private lateinit var spotifyApiService: SpotifyApiService
+    private lateinit var reviewManager: ReviewManager
+    private lateinit var listManager: ListManager
 
     // Tab buttons
     private lateinit var tabAlbums: Button
@@ -53,9 +59,9 @@ class HomeFragment : Fragment() {
     private var menuPopup: PopupWindow? = null
 
     // Spotify data
-    private var newReleasesAlbums = listOf<Music>() // For "From friends" and "Popular this week"
-    private var trendingAlbums = listOf<Music>() // For "Trending now"
-    private var popularWeekAlbums = listOf<Music>() // For "Popular this week" section
+    private var newReleasesAlbums = listOf<Music>()
+    private var trendingAlbums = listOf<Music>()
+    private var popularWeekAlbums = listOf<Music>()
 
     // Cache variables
     private var isDataLoaded = false
@@ -68,33 +74,22 @@ class HomeFragment : Fragment() {
     ): View? {
         authManager = AuthManager(requireContext())
         spotifyApiService = SpotifyApiService(requireContext())
+        reviewManager = ReviewManager(requireContext())
+        listManager = ListManager(requireContext())
         return inflater.inflate(R.layout.fragment_home_signed_in, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Initialize all views
         initializeViews(view)
-
         setupNavigationBar(view)
         setupTabBar(view)
         setupContentSections(view)
 
-        // Check if we have cached data, otherwise load new data
-        if (isDataLoaded && (System.currentTimeMillis() - cacheTimestamp) < CACHE_DURATION) {
-            // Use cached data
-            populateAlbumSections()
-            Log.d("HomeFragment", "🔄 Using cached data")
-        } else {
-            // Load new Spotify data
-            loadSpotifyData()
-            isDataLoaded = true
-            cacheTimestamp = System.currentTimeMillis()
-        }
-
         // Set initial state - Albums tab active
         setActiveTab(Tab.ALBUMS)
+        loadActiveTabData()
     }
 
     private fun initializeViews(view: View) {
@@ -124,23 +119,245 @@ class HomeFragment : Fragment() {
             newFriendsTitle = view.findViewById(R.id.new_friends_title)
             trendingTitle = view.findViewById(R.id.popular_friends_title)
         } catch (e: Exception) {
-            android.util.Log.e("HomeFragment", "Error initializing views: ${e.message}")
+            Log.e("HomeFragment", "Error initializing views: ${e.message}")
             throw e
         }
     }
 
-    private fun loadSpotifyData() {
-        android.util.Log.d("HomeFragment", "Starting to load Spotify data...")
+    private fun setupTabBar(view: View) {
+        tabAlbums.setOnClickListener {
+            setActiveTab(Tab.ALBUMS)
+            loadActiveTabData()
+        }
+        tabReviews.setOnClickListener {
+            setActiveTab(Tab.REVIEWS)
+            loadActiveTabData()
+        }
+        tabLists.setOnClickListener {
+            setActiveTab(Tab.LISTS)
+            loadActiveTabData()
+        }
+    }
 
-        // Load popular albums for "Popular this week" section
+    private fun loadActiveTabData() {
+        when {
+            albumsContent.visibility == View.VISIBLE -> {
+                if (!isDataLoaded || (System.currentTimeMillis() - cacheTimestamp) >= CACHE_DURATION) {
+                    loadSpotifyData()
+                    isDataLoaded = true
+                    cacheTimestamp = System.currentTimeMillis()
+                } else {
+                    populateAlbumSections()
+                }
+            }
+            reviewsContent.visibility == View.VISIBLE -> {
+                loadPopularReviews()
+            }
+            listsContent.visibility == View.VISIBLE -> {
+                loadPopularLists()
+            }
+        }
+    }
+
+    // Load reviews sorted by likes
+    private fun loadPopularReviews() {
+        val popularReviews = reviewManager.getPopularReviews()
+        updateReviewsContent(popularReviews)
+    }
+
+    // Load lists sorted by likes
+    private fun loadPopularLists() {
+        val popularLists = listManager.getPopularLists()
+        updateListsContent(popularLists)
+    }
+
+    // Update reviews content with real data
+    private fun updateReviewsContent(reviews: List<Review>) {
+        val reviewsContainer = reviewsContent.findViewById<LinearLayout>(R.id.reviews_container)
+        reviewsContainer?.removeAllViews()
+
+        if (reviews.isEmpty()) {
+            val emptyView = TextView(requireContext()).apply {
+                text = "No reviews yet"
+                textSize = 16f
+                setTextColor(resources.getColor(android.R.color.darker_gray))
+                gravity = android.view.Gravity.CENTER
+                setPadding(0, 50, 0, 50)
+            }
+            reviewsContainer?.addView(emptyView)
+            return
+        }
+
+        reviews.take(5).forEach { review ->
+            val reviewView = createReviewView(review)
+            reviewsContainer?.addView(reviewView)
+
+            // Add divider except for last item
+            if (review != reviews.last()) {
+                val divider = View(requireContext()).apply {
+                    layoutParams = LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        1
+                    ).apply {
+                        setMargins(0, 20, 0, 20)
+                    }
+                    setBackgroundColor(resources.getColor(R.color.divider_gray))
+                }
+                reviewsContainer?.addView(divider)
+            }
+        }
+    }
+
+    // Create review view with real data
+    private fun createReviewView(review: Review): View {
+        val inflater = LayoutInflater.from(requireContext())
+        val reviewView = inflater.inflate(R.layout.layout_music_review_item, null)
+
+        // Album cover
+        val albumCover = reviewView.findViewById<ImageView>(R.id.album_cover)
+        if (!review.musicCoverUrl.isNullOrEmpty()) {
+            Glide.with(requireContext())
+                .load(review.musicCoverUrl)
+                .placeholder(R.drawable.album_placeholder)
+                .error(R.drawable.album_placeholder)
+                .into(albumCover)
+        } else {
+            albumCover.setImageResource(R.drawable.album_placeholder)
+        }
+
+        // Album title and year
+        reviewView.findViewById<TextView>(R.id.album_title).text = review.musicTitle
+        reviewView.findViewById<TextView>(R.id.album_year).text = review.musicYear
+
+        // Rating stars
+        updateRatingStars(reviewView, review.rating)
+
+        // Like count
+        reviewView.findViewById<TextView>(R.id.like_count).text = review.likes.toString()
+
+        // User name
+        reviewView.findViewById<TextView>(R.id.user_name).text = review.userName
+
+        // Review content
+        reviewView.findViewById<TextView>(R.id.review_content).text = review.content
+
+        // Click listener
+        reviewView.setOnClickListener {
+            navigateToReviewDetail(review)
+        }
+
+        return reviewView
+    }
+
+    private fun updateRatingStars(reviewView: View, rating: Int) {
+        val stars = listOf(
+            reviewView.findViewById<ImageView>(R.id.star1),
+            reviewView.findViewById<ImageView>(R.id.star2),
+            reviewView.findViewById<ImageView>(R.id.star3),
+            reviewView.findViewById<ImageView>(R.id.star4),
+            reviewView.findViewById<ImageView>(R.id.star5)
+        )
+
+        stars.forEachIndexed { index, star ->
+            star.setImageResource(
+                if (index < rating) R.drawable.ic_star_purple else R.drawable.ic_star
+            )
+        }
+    }
+
+    // Update lists content with real data
+    private fun updateListsContent(lists: List<UserList>) {
+        // Since your lists layout uses hardcoded content, we'll create dynamic views
+        listsContent.removeAllViews()
+
+        if (lists.isEmpty()) {
+            val emptyView = TextView(requireContext()).apply {
+                text = "No lists yet"
+                textSize = 16f
+                setTextColor(resources.getColor(android.R.color.darker_gray))
+                gravity = android.view.Gravity.CENTER
+                setPadding(0, 50, 0, 50)
+            }
+            listsContent.addView(emptyView)
+            return
+        }
+
+        lists.forEach { list ->
+            val listView = createListView(list)
+            listsContent.addView(listView)
+        }
+    }
+
+    private fun createListView(list: UserList): View {
+        val inflater = LayoutInflater.from(requireContext())
+        val listView = inflater.inflate(R.layout.layout_list_item, null)
+
+        // List title and creator
+        listView.findViewById<TextView>(R.id.list_title).text = list.name
+        listView.findViewById<TextView>(R.id.list_creator).text = list.creator
+
+        // List description
+        listView.findViewById<TextView>(R.id.list_description).text = list.description
+
+        // Album covers
+        val albumsContainer = listView.findViewById<LinearLayout>(R.id.albums_container)
+        albumsContainer.removeAllViews()
+
+        list.albums.take(6).forEach { album ->
+            val albumCover = ImageView(requireContext()).apply {
+                layoutParams = LinearLayout.LayoutParams(dpToPx(110), dpToPx(160)).apply {
+                    marginEnd = dpToPx(10)
+                }
+                scaleType = ImageView.ScaleType.CENTER_CROP
+                background = resources.getDrawable(R.drawable.rounded_album, null)
+
+                if (album.coverImage.isNotEmpty()) {
+                    Glide.with(requireContext())
+                        .load(album.coverImage)
+                        .placeholder(R.drawable.album_placeholder)
+                        .error(R.drawable.album_placeholder)
+                        .into(this)
+                } else {
+                    setImageResource(R.drawable.album_placeholder)
+                }
+            }
+            albumsContainer.addView(albumCover)
+        }
+
+        // Click listener
+        listView.setOnClickListener {
+            navigateToListDetail(list)
+        }
+
+        return listView
+    }
+
+    private fun navigateToReviewDetail(review: Review) {
+        val bundle = Bundle().apply {
+            putParcelable("review", review)
+        }
+        findNavController().navigate(R.id.action_homeFragment_to_reviewDetailFragment, bundle)
+    }
+
+    private fun navigateToListDetail(list: UserList) {
+        val bundle = Bundle().apply {
+            putParcelable("list", list)
+        }
+        findNavController().navigate(R.id.action_homeFragment_to_listDetailFragment, bundle)
+    }
+
+    // Existing methods from your original HomeFragment
+    private fun loadSpotifyData() {
+        Log.d("HomeFragment", "Starting to load Spotify data...")
+
         spotifyApiService.getPopularThisWeek(object : SpotifyApiService.SpotifyCallback<List<Music>> {
             override fun onSuccess(result: List<Music>) {
-                android.util.Log.d("HomeFragment", "✅ Popular this week loaded: ${result.size} items")
+                Log.d("HomeFragment", "✅ Popular this week loaded: ${result.size} items")
                 popularWeekAlbums = result
-                loadFriendsAlbums() // This should call getFriendsAlbums, NOT getNewReleases
+                loadFriendsAlbums()
             }
             override fun onError(error: String) {
-                android.util.Log.e("HomeFragment", "❌ Failed to load popular this week: $error")
+                Log.e("HomeFragment", "❌ Failed to load popular this week: $error")
                 popularWeekAlbums = getPopularMockData()
                 loadFriendsAlbums()
             }
@@ -150,11 +367,10 @@ class HomeFragment : Fragment() {
     private fun loadFriendsAlbums() {
         Log.d("HomeFragment", "🔄 Calling getFriendsAlbums() for From Friends section")
 
-        // This calls getFriendsAlbums for the "From friends" section
         spotifyApiService.getFriendsAlbums(object : SpotifyApiService.SpotifyCallback<List<Music>> {
             override fun onSuccess(result: List<Music>) {
                 Log.d("HomeFragment", "✅ Friends albums loaded: ${result.size} items")
-                newReleasesAlbums = result // This variable is used for "From friends" section
+                newReleasesAlbums = result
                 loadSimpleTrendingData()
             }
             override fun onError(error: String) {
@@ -166,53 +382,41 @@ class HomeFragment : Fragment() {
     }
 
     private fun loadSimpleTrendingData() {
-        // Use the simple trending approach that's more likely to work
         spotifyApiService.getSimpleTrendingMusic(object : SpotifyApiService.SpotifyCallback<List<Music>> {
             override fun onSuccess(result: List<Music>) {
-                android.util.Log.d("HomeFragment", "✅ Simple trending loaded: ${result.size} items")
-                // Filter to get unique albums and take the most popular ones
+                Log.d("HomeFragment", "✅ Simple trending loaded: ${result.size} items")
                 trendingAlbums = result
                     .distinctBy { it.album }
                     .sortedByDescending { it.averageRating }
                     .take(8)
                 populateAlbumSections()
                 showToast("Loaded trending music")
-
-                // Set cache timestamp when all data is loaded
                 cacheTimestamp = System.currentTimeMillis()
             }
             override fun onError(error: String) {
-                android.util.Log.e("HomeFragment", "❌ Simple trending failed: $error")
-                // Try one more fallback - search for specific popular artists
+                Log.e("HomeFragment", "❌ Simple trending failed: $error")
                 loadArtistBasedTrending()
             }
         })
     }
 
     private fun loadArtistBasedTrending() {
-        // Search for specific popular artists as final fallback
         val popularArtists = listOf("Taylor Swift", "Drake", "Bad Bunny", "The Weeknd", "Ed Sheeran")
         val randomArtist = popularArtists.random()
 
         spotifyApiService.searchMusic(randomArtist, object : SpotifyApiService.SpotifyCallback<List<Music>> {
             override fun onSuccess(result: List<Music>) {
-                android.util.Log.d("HomeFragment", "✅ Artist-based trending loaded: ${result.size} items")
-                trendingAlbums = result
-                    .distinctBy { it.album }
-                    .take(8)
+                Log.d("HomeFragment", "✅ Artist-based trending loaded: ${result.size} items")
+                trendingAlbums = result.distinctBy { it.album }.take(8)
                 populateAlbumSections()
                 showToast("Loaded popular music")
-
-                // Set cache timestamp when all data is loaded
                 cacheTimestamp = System.currentTimeMillis()
             }
             override fun onError(error: String) {
-                android.util.Log.e("HomeFragment", "❌ All trending methods failed: $error")
+                Log.e("HomeFragment", "❌ All trending methods failed: $error")
                 trendingAlbums = getTrendingMockData()
                 populateAlbumSections()
                 showToast("Using sample trending data")
-
-                // Set cache timestamp when all data is loaded (even with mock data)
                 cacheTimestamp = System.currentTimeMillis()
             }
         })
@@ -221,48 +425,16 @@ class HomeFragment : Fragment() {
     private fun getPopularMockData(): List<Music> {
         return listOf(
             Music(
-                id = "new1",
-                title = "New Album 2024",
-                artist = "Various Artists",
-                album = "New Album 2024",
-                releaseYear = 2024,
-                genre = "Various",
+                id = "new1", title = "New Album 2024", artist = "Various Artists",
+                album = "New Album 2024", releaseYear = 2024, genre = "Various",
                 coverImage = "https://via.placeholder.com/300/8B7D9E/FFFFFF?text=New+2024",
-                averageRating = 4.2,
-                reviewCount = 50
+                averageRating = 4.2, reviewCount = 50
             ),
             Music(
-                id = "new2",
-                title = "Fresh Sounds",
-                artist = "New Artist",
-                album = "Fresh Sounds",
-                releaseYear = 2024,
-                genre = "Pop",
+                id = "new2", title = "Fresh Sounds", artist = "New Artist",
+                album = "Fresh Sounds", releaseYear = 2024, genre = "Pop",
                 coverImage = "https://via.placeholder.com/300/5D4A6F/FFFFFF?text=Fresh",
-                averageRating = 4.0,
-                reviewCount = 35
-            ),
-            Music(
-                id = "new3",
-                title = "Latest Hits",
-                artist = "Chart Toppers",
-                album = "Latest Hits",
-                releaseYear = 2024,
-                genre = "Various",
-                coverImage = "https://via.placeholder.com/300/8B7D9E/FFFFFF?text=Latest",
-                averageRating = 4.3,
-                reviewCount = 42
-            ),
-            Music(
-                id = "new4",
-                title = "Brand New",
-                artist = "Upcoming Star",
-                album = "Brand New",
-                releaseYear = 2024,
-                genre = "R&B",
-                coverImage = "https://via.placeholder.com/300/5D4A6F/FFFFFF?text=Brand+New",
-                averageRating = 4.1,
-                reviewCount = 28
+                averageRating = 4.0, reviewCount = 35
             )
         )
     }
@@ -270,48 +442,16 @@ class HomeFragment : Fragment() {
     private fun getFriendsMockData(): List<Music> {
         return listOf(
             Music(
-                id = "friend1",
-                title = "Midnights",
-                artist = "Taylor Swift",
-                album = "Midnights",
-                releaseYear = 2022,
-                genre = "Pop",
+                id = "friend1", title = "Midnights", artist = "Taylor Swift",
+                album = "Midnights", releaseYear = 2022, genre = "Pop",
                 coverImage = "https://via.placeholder.com/300/8B7D9E/FFFFFF?text=Midnights",
-                averageRating = 4.8,
-                reviewCount = 280
+                averageRating = 4.8, reviewCount = 280
             ),
             Music(
-                id = "friend2",
-                title = "Happier Than Ever",
-                artist = "Billie Eilish",
-                album = "Happier Than Ever",
-                releaseYear = 2021,
-                genre = "Pop",
+                id = "friend2", title = "Happier Than Ever", artist = "Billie Eilish",
+                album = "Happier Than Ever", releaseYear = 2021, genre = "Pop",
                 coverImage = "https://via.placeholder.com/300/5D4A6F/FFFFFF?text=Billie",
-                averageRating = 4.6,
-                reviewCount = 220
-            ),
-            Music(
-                id = "friend3",
-                title = "Future Nostalgia",
-                artist = "Dua Lipa",
-                album = "Future Nostalgia",
-                releaseYear = 2020,
-                genre = "Pop",
-                coverImage = "https://via.placeholder.com/300/8B7D9E/FFFFFF?text=Dua+Lipa",
-                averageRating = 4.7,
-                reviewCount = 240
-            ),
-            Music(
-                id = "friend4",
-                title = "Fine Line",
-                artist = "Harry Styles",
-                album = "Fine Line",
-                releaseYear = 2019,
-                genre = "Pop",
-                coverImage = "https://via.placeholder.com/300/5D4A6F/FFFFFF?text=Fine+Line",
-                averageRating = 4.5,
-                reviewCount = 200
+                averageRating = 4.6, reviewCount = 220
             )
         )
     }
@@ -319,48 +459,16 @@ class HomeFragment : Fragment() {
     private fun getTrendingMockData(): List<Music> {
         return listOf(
             Music(
-                id = "trend1",
-                title = "UTOPIA",
-                artist = "Travis Scott",
-                album = "UTOPIA",
-                releaseYear = 2023,
-                genre = "Hip-Hop",
+                id = "trend1", title = "UTOPIA", artist = "Travis Scott",
+                album = "UTOPIA", releaseYear = 2023, genre = "Hip-Hop",
                 coverImage = "https://via.placeholder.com/300/8B7D9E/FFFFFF?text=UTOPIA",
-                averageRating = 4.8,
-                reviewCount = 250
+                averageRating = 4.8, reviewCount = 250
             ),
             Music(
-                id = "trend2",
-                title = "Midnights",
-                artist = "Taylor Swift",
-                album = "Midnights",
-                releaseYear = 2022,
-                genre = "Pop",
+                id = "trend2", title = "Midnights", artist = "Taylor Swift",
+                album = "Midnights", releaseYear = 2022, genre = "Pop",
                 coverImage = "https://via.placeholder.com/300/5D4A6F/FFFFFF?text=Midnights",
-                averageRating = 4.9,
-                reviewCount = 300
-            ),
-            Music(
-                id = "trend3",
-                title = "Un Verano Sin Ti",
-                artist = "Bad Bunny",
-                album = "Un Verano Sin Ti",
-                releaseYear = 2022,
-                genre = "Reggaeton",
-                coverImage = "https://via.placeholder.com/300/8B7D9E/FFFFFF?text=Un+Verano",
-                averageRating = 4.7,
-                reviewCount = 280
-            ),
-            Music(
-                id = "trend4",
-                title = "DAMN",
-                artist = "Kendrick Lamar",
-                album = "DAMN",
-                releaseYear = 2017,
-                genre = "Hip-Hop",
-                coverImage = "https://via.placeholder.com/300/5D4A6F/FFFFFF?text=DAMN",
-                averageRating = 4.9,
-                reviewCount = 320
+                averageRating = 4.9, reviewCount = 300
             )
         )
     }
@@ -378,7 +486,7 @@ class HomeFragment : Fragment() {
 
         menuPopup = PopupWindow(
             menuView,
-            280.dpToPx(requireContext()),
+            dpToPx(280), // Call as regular method
             ViewGroup.LayoutParams.MATCH_PARENT,
             true
         ).apply {
@@ -390,9 +498,7 @@ class HomeFragment : Fragment() {
         setupMenuClickListeners(menuView)
     }
 
-    private fun Int.dpToPx(context: android.content.Context): Int {
-        return (this * context.resources.displayMetrics.density).toInt()
-    }
+
 
     private fun setupMenuClickListeners(menuView: View) {
         menuView.findViewById<View>(R.id.menu_popular).setOnClickListener {
@@ -426,18 +532,6 @@ class HomeFragment : Fragment() {
         findNavController().navigate(R.id.action_homeFragment_to_welcomeFragment)
     }
 
-    private fun setupTabBar(view: View) {
-        tabAlbums.setOnClickListener {
-            setActiveTab(Tab.ALBUMS)
-        }
-        tabReviews.setOnClickListener {
-            setActiveTab(Tab.REVIEWS)
-        }
-        tabLists.setOnClickListener {
-            setActiveTab(Tab.LISTS)
-        }
-    }
-
     private fun setupContentSections(view: View) {
         // Content sections are already initialized in initializeViews()
     }
@@ -468,32 +562,25 @@ class HomeFragment : Fragment() {
     }
 
     private fun populateAlbumSections() {
-        // Update section titles
         updateSectionTitles()
-
-        // Clear existing views
         popularWeekContainer.removeAllViews()
         newFriendsContainer.removeAllViews()
         trendingContainer.removeAllViews()
 
-        // Debug logging
-        android.util.Log.d("HomeFragment", "Popular this week: ${popularWeekAlbums.size}, From friends: ${newReleasesAlbums.size}, Trending: ${trendingAlbums.size}")
+        Log.d("HomeFragment", "Popular this week: ${popularWeekAlbums.size}, From friends: ${newReleasesAlbums.size}, Trending: ${trendingAlbums.size}")
 
-        // Populate "Popular this week" with popular albums
         if (popularWeekAlbums.isNotEmpty()) {
             popularWeekAlbums.take(4).forEach { music ->
                 popularWeekContainer.addView(createAlbumView(music))
             }
         }
 
-        // Populate "From friends" with friends albums
         if (newReleasesAlbums.isNotEmpty()) {
             newReleasesAlbums.take(4).forEach { music ->
                 newFriendsContainer.addView(createAlbumView(music))
             }
         }
 
-        // Populate "Trending now" with trending albums
         if (trendingAlbums.isNotEmpty()) {
             trendingAlbums.take(4).forEach { music ->
                 trendingContainer.addView(createAlbumView(music))
@@ -518,7 +605,6 @@ class HomeFragment : Fragment() {
             clipToOutline = true
             background = resources.getDrawable(R.drawable.rounded_album, null)
 
-            // Load album cover using Glide
             if (music.coverImage.isNotEmpty()) {
                 Glide.with(requireContext())
                     .load(music.coverImage)
@@ -529,7 +615,6 @@ class HomeFragment : Fragment() {
                 setImageResource(R.drawable.album_placeholder)
             }
 
-            // Navigate to album detail page
             setOnClickListener { navigateToAlbumDetail(music) }
         }
     }

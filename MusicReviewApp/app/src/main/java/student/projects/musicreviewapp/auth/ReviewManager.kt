@@ -17,7 +17,7 @@ class ReviewManager(private val context: Context) {
         val currentReviews = getReviews().toMutableList()
 
         // Check if review already exists for this album
-        val existingIndex = currentReviews.indexOfFirst { it.musicId == review.musicId }
+        val existingIndex = currentReviews.indexOfFirst { it.musicId == review.musicId && it.userId == review.userId }
         if (existingIndex != -1) {
             // Update existing review
             currentReviews[existingIndex] = review
@@ -46,10 +46,65 @@ class ReviewManager(private val context: Context) {
         return getReviews().find { it.musicId == albumId }
     }
 
+    // NEW METHOD: Check if user has reviewed an album
+    fun hasUserReviewedAlbum(albumId: String): Boolean {
+        return getReviews().any { it.musicId == albumId }
+    }
+
+    // NEW METHOD: Get reviewed album IDs
+    fun getReviewedAlbumIds(): List<String> {
+        return getReviews().map { it.musicId }
+    }
+
+    // NEW METHOD: Get review count for statistics
+    fun getReviewCount(): Int {
+        return getReviews().size
+    }
+
     fun deleteReview(albumId: String) {
         val currentReviews = getReviews().toMutableList()
         currentReviews.removeAll { it.musicId == albumId }
         saveReviewsToStorage(currentReviews)
+    }
+
+    // NEW METHOD: Like a review
+    fun likeReview(reviewId: String) {
+        val reviews = getReviews().toMutableList()
+        val reviewIndex = reviews.indexOfFirst { it.id == reviewId }
+        if (reviewIndex != -1) {
+            val review = reviews[reviewIndex]
+            val updatedReview = review.copy(
+                liked = true,
+                likes = review.likes + 1
+            )
+            reviews[reviewIndex] = updatedReview
+            saveReviewsToStorage(reviews)
+        }
+    }
+
+    // NEW METHOD: Unlike a review
+    fun unlikeReview(reviewId: String) {
+        val reviews = getReviews().toMutableList()
+        val reviewIndex = reviews.indexOfFirst { it.id == reviewId }
+        if (reviewIndex != -1) {
+            val review = reviews[reviewIndex]
+            val updatedReview = review.copy(
+                liked = false,
+                likes = maxOf(0, review.likes - 1)
+            )
+            reviews[reviewIndex] = updatedReview
+            saveReviewsToStorage(reviews)
+        }
+    }
+
+    // NEW METHOD: Get reviews by user
+    fun getReviewsByUser(userId: String): List<Review> {
+        return getReviews().filter { it.userId == userId }
+    }
+
+    // NEW METHOD: Get popular reviews
+    fun getPopularReviews(): List<Review> {
+        return getReviews().sortedByDescending { it.likes }
     }
 
     private fun saveReviewsToStorage(reviews: List<Review>) {
@@ -69,6 +124,7 @@ class ReviewManager(private val context: Context) {
                 put("timestamp", review.timestamp)
                 put("musicId", review.musicId)
                 put("musicTitle", review.musicTitle)
+                put("musicArtist", review.musicArtist ?: "")
                 put("musicYear", review.musicYear)
                 put("musicCoverUrl", review.musicCoverUrl ?: "")
                 put("rating", review.rating)
@@ -76,6 +132,7 @@ class ReviewManager(private val context: Context) {
                 put("isFirstListen", review.isFirstListen)
                 put("allowReplies", review.allowReplies)
                 put("liked", review.liked)
+                put("likes", review.likes) // Add likes to JSON
             }
             jsonArray.put(jsonObject)
         }
@@ -103,13 +160,15 @@ class ReviewManager(private val context: Context) {
                     timestamp = jsonObject.getString("timestamp"),
                     musicId = jsonObject.getString("musicId"),
                     musicTitle = jsonObject.getString("musicTitle"),
+                    musicArtist = jsonObject.optString("musicArtist").takeIf { it.isNotEmpty() },
                     musicYear = jsonObject.getString("musicYear"),
                     musicCoverUrl = jsonObject.optString("musicCoverUrl").takeIf { it.isNotEmpty() },
                     rating = jsonObject.getInt("rating"),
                     tags = tags,
                     isFirstListen = jsonObject.getBoolean("isFirstListen"),
                     allowReplies = jsonObject.getBoolean("allowReplies"),
-                    liked = jsonObject.getBoolean("liked")
+                    liked = jsonObject.getBoolean("liked"),
+                    likes = jsonObject.optInt("likes", 0) // Read likes from JSON, default to 0
                 )
                 reviews.add(review)
             }

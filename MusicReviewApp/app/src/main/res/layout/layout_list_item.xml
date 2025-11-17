@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="?attr/selectableItemBackground">
+
+    <!-- Title + Creator -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingBottom="8dp">
+
+        <TextView
+            android:id="@+id/list_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="List Title"
+            android:textColor="#000000"
+            android:textSize="16sp"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:id="@+id/list_creator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Creator"
+            android:textColor="#666666"
+            android:textSize="14sp"/>
+    </LinearLayout>
+
+    <!-- Album Covers -->
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none"
+        android:paddingBottom="8dp">
+
+        <LinearLayout
+            android:id="@+id/albums_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:clipToPadding="false" />
+    </HorizontalScrollView>
+
+    <!-- Description -->
+    <TextView
+        android:id="@+id/list_description"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="List description"
+        android:textColor="#000000"
+        android:textSize="14sp"/>
+
+</LinearLayout>

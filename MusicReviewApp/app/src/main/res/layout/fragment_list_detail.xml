@@ -48,62 +48,170 @@
 
     </RelativeLayout>
 
-    <!-- List Info -->
+    <!-- List Info Section -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="16dp"
-        android:gravity="center_vertical">
+        android:orientation="vertical"
+        android:padding="16dp">
 
+        <!-- List Title and Creator -->
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
 
             <TextView
-                android:id="@+id/album_count"
+                android:id="@+id/list_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="List Title"
+                android:textColor="#000000"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/list_creator"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="0 albums"
-                android:textColor="#808080"
+                android:text="by Creator"
+                android:textColor="#666666"
                 android:textSize="14sp" />
 
         </LinearLayout>
 
-        <!-- Completion Percentage -->
+        <!-- List Description -->
+        <TextView
+            android:id="@+id/list_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="List description goes here..."
+            android:textColor="#666666"
+            android:textSize="14sp"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Stats and Actions Row -->
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical">
 
-            <ImageView
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:src="@drawable/ic_visibility"
-                android:contentDescription="@string/completion"
-                app:tint="#808080"
-                android:layout_marginEnd="4dp" />
+            <!-- Left Side - Stats -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
-            <TextView
-                android:id="@+id/completion_percentage"
+                <!-- Album Count -->
+                <TextView
+                    android:id="@+id/album_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0 albums"
+                    android:textColor="#808080"
+                    android:textSize="14sp"
+                    android:layout_marginEnd="16dp" />
+
+                <!-- Likes Count -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:id="@+id/like_icon"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_heart"
+                        android:contentDescription="@string/like"
+                        app:tint="#808080"
+                        android:layout_marginEnd="4dp" />
+
+                    <TextView
+                        android:id="@+id/likes_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0 likes"
+                        android:textColor="#808080"
+                        android:textSize="14sp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Right Side - Completion Percentage -->
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="0%"
-                android:textColor="#808080"
-                android:textSize="14sp" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/ic_visibility"
+                    android:contentDescription="@string/completion"
+                    app:tint="#808080"
+                    android:layout_marginEnd="4dp" />
+
+                <TextView
+                    android:id="@+id/completion_percentage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0%"
+                    android:textColor="#808080"
+                    android:textSize="14sp" />
+
+            </LinearLayout>
 
         </LinearLayout>
 
+        <!-- Creation Date -->
+        <TextView
+            android:id="@+id/created_date"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Created date"
+            android:textColor="#999999"
+            android:textSize="12sp"
+            android:layout_marginTop="8dp" />
+
     </LinearLayout>
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#F0F0F0"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp" />
+
+    <!-- Albums Grid Header -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Albums in this list"
+        android:textColor="#000000"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="8dp" />
 
     <!-- Albums Grid -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/albums_recycler"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:padding="8dp" />
 
 </LinearLayout>

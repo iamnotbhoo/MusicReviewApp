@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Top App Bar -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="#8B7D9E"
+            android:paddingHorizontal="16dp"
+            android:elevation="4dp">
+
+            <ImageView
+                android:id="@+id/back_button"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                app:tint="@android:color/white"
+                android:contentDescription="Back" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Likes"
+                android:textColor="@android:color/white"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:gravity="center" />
+
+        </LinearLayout>
+
+        <!-- Tab Bar -->
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="#8B7D9E"
+            android:scrollbars="none"
+            android:elevation="2dp">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="8dp">
+
+                <!-- Albums Tab -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <Button
+                        android:id="@+id/tab_albums"
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:text="ALBUMS"
+                        android:textColor="@android:color/white"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.05"
+                        android:paddingHorizontal="16dp"
+                        android:background="?attr/selectableItemBackground"
+                        style="?android:attr/borderlessButtonStyle" />
+
+                    <View
+                        android:id="@+id/albums_indicator"
+                        android:layout_width="match_parent"
+                        android:layout_height="3dp"
+                        android:background="#5D4A6F"
+                        android:visibility="visible" />
+                </LinearLayout>
+
+                <!-- Reviews Tab -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <Button
+                        android:id="@+id/tab_reviews"
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:text="REVIEWS"
+                        android:textColor="@android:color/white"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.05"
+                        android:paddingHorizontal="16dp"
+                        android:background="?attr/selectableItemBackground"
+                        style="?android:attr/borderlessButtonStyle" />
+
+                    <View
+                        android:id="@+id/reviews_indicator"
+                        android:layout_width="match_parent"
+                        android:layout_height="3dp"
+                        android:background="#5D4A6F"
+                        android:visibility="gone" />
+                </LinearLayout>
+
+                <!-- Lists Tab -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <Button
+                        android:id="@+id/tab_lists"
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:text="LISTS"
+                        android:textColor="@android:color/white"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.05"
+                        android:paddingHorizontal="16dp"
+                        android:background="?attr/selectableItemBackground"
+                        style="?android:attr/borderlessButtonStyle" />
+
+                    <View
+                        android:id="@+id/lists_indicator"
+                        android:layout_width="match_parent"
+                        android:layout_height="3dp"
+                        android:background="#5D4A6F"
+                        android:visibility="gone" />
+                </LinearLayout>
+
+            </LinearLayout>
+        </HorizontalScrollView>
+
+        <!-- Content -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- ALBUMS CONTENT -->
+            <LinearLayout
+                android:id="@+id/albums_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="visible">
+
+                <!-- Empty State -->
+                <LinearLayout
+                    android:id="@+id/albums_empty_state"
+                    android:layout_width="match_parent"
+                    android:layout_height="400dp"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:visibility="gone">
+
+                    <ImageView
+                        android:layout_width="80dp"
+                        android:layout_height="80dp"
+                        android:src="@drawable/ic_heart_orange"
+                        android:layout_marginBottom="16dp"
+                        app:tint="#CCCCCC" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="No liked albums yet"
+                        android:textSize="16sp"
+                        android:textColor="#666666" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Albums you like will appear here"
+                        android:textSize="14sp"
+                        android:textColor="#999999"
+                        android:layout_marginTop="8dp" />
+                </LinearLayout>
+
+                <!-- Albums Grid -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/liked_albums_recycler"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="16dp" />
+
+            </LinearLayout>
+
+            <!-- REVIEWS CONTENT -->
+            <LinearLayout
+                android:id="@+id/reviews_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <!-- Empty State -->
+                <LinearLayout
+                    android:id="@+id/reviews_empty_state"
+                    android:layout_width="match_parent"
+                    android:layout_height="400dp"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:visibility="gone">
+
+                    <ImageView
+                        android:layout_width="80dp"
+                        android:layout_height="80dp"
+                        android:src="@drawable/ic_heart_orange"
+                        android:layout_marginBottom="16dp"
+                        app:tint="#CCCCCC" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="No liked reviews yet"
+                        android:textSize="16sp"
+                        android:textColor="#666666" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Reviews you like will appear here"
+                        android:textSize="14sp"
+                        android:textColor="#999999"
+                        android:layout_marginTop="8dp" />
+                </LinearLayout>
+
+                <!-- Reviews List -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/liked_reviews_recycler"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="16dp" />
+
+            </LinearLayout>
+
+            <!-- LISTS CONTENT -->
+            <LinearLayout
+                android:id="@+id/lists_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <!-- Empty State -->
+                <LinearLayout
+                    android:id="@+id/lists_empty_state"
+                    android:layout_width="match_parent"
+                    android:layout_height="400dp"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:visibility="gone">
+
+                    <ImageView
+                        android:layout_width="80dp"
+                        android:layout_height="80dp"
+                        android:src="@drawable/ic_heart_orange"
+                        android:layout_marginBottom="16dp"
+                        app:tint="#CCCCCC" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="No liked lists yet"
+                        android:textSize="16sp"
+                        android:textColor="#666666" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Lists you like will appear here"
+                        android:textSize="14sp"
+                        android:textColor="#999999"
+                        android:layout_marginTop="8dp" />
+                </LinearLayout>
+
+                <!-- Lists List -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/liked_lists_recycler"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="16dp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

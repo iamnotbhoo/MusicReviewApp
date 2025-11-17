@@ -2,22 +2,53 @@ package student.projects.musicreviewapp.auth
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.google.gson.Gson
 import org.json.JSONArray
 import org.json.JSONObject
 import student.projects.musicreviewapp.models.UserList
 import student.projects.musicreviewapp.models.Music
-import java.text.SimpleDateFormat
-import java.util.*
 
 class ListManager(private val context: Context) {
 
     private val sharedPreferences: SharedPreferences = context.getSharedPreferences("user_lists", Context.MODE_PRIVATE)
     private val key = "user_lists_data"
+    private val gson = Gson()
 
-    fun createList(list: UserList) {
+    fun createList(userList: UserList) {
         val currentLists = getLists().toMutableList()
-        currentLists.add(list)
+
+        // Check if list already exists
+        val existingIndex = currentLists.indexOfFirst { it.id == userList.id }
+        if (existingIndex != -1) {
+            // Update existing list
+            currentLists[existingIndex] = userList
+        } else {
+            // Add new list
+            currentLists.add(userList)
+        }
+
         saveListsToStorage(currentLists)
+    }
+
+    // Add this method to your ListManager class
+    fun addAlbumToList(listId: String, album: Music) {
+        val lists = getLists().toMutableList()
+        val listIndex = lists.indexOfFirst { it.id == listId }
+
+        if (listIndex != -1) {
+            val userList = lists[listIndex]
+
+            // Check if album is already in the list
+            if (!userList.albums.any { it.id == album.id }) {
+                val updatedAlbums = userList.albums.toMutableList().apply {
+                    add(album)
+                }
+
+                val updatedList = userList.copy(albums = updatedAlbums)
+                lists[listIndex] = updatedList
+                saveListsToStorage(lists)
+            }
+        }
     }
 
     fun getLists(): List<UserList> {
@@ -33,46 +64,46 @@ class ListManager(private val context: Context) {
         return getLists().find { it.id == listId }
     }
 
-    fun updateList(updatedList: UserList) {
-        val currentLists = getLists().toMutableList()
-        val index = currentLists.indexOfFirst { it.id == updatedList.id }
-        if (index != -1) {
-            currentLists[index] = updatedList
-            saveListsToStorage(currentLists)
-        }
-    }
-
     fun deleteList(listId: String) {
         val currentLists = getLists().toMutableList()
         currentLists.removeAll { it.id == listId }
         saveListsToStorage(currentLists)
     }
 
-    fun addAlbumToList(listId: String, album: Music) {
-        val list = getListById(listId)
-        list?.let { currentList ->
-            val updatedAlbums = currentList.albums.toMutableList()
-            if (!updatedAlbums.any { it.id == album.id }) {
-                updatedAlbums.add(album)
-                val updatedList = currentList.copy(albums = updatedAlbums)
-                updateList(updatedList)
-            }
+    fun getPopularLists(): List<UserList> {
+        return getLists().sortedByDescending { it.likes }
+    }
+
+    fun likeList(listId: String) {
+        val lists = getLists().toMutableList()
+        val listIndex = lists.indexOfFirst { it.id == listId }
+        if (listIndex != -1) {
+            val userList = lists[listIndex]
+            val updatedList = userList.copy(
+                liked = true,
+                likes = userList.likes + 1
+            )
+            lists[listIndex] = updatedList
+            saveListsToStorage(lists)
         }
     }
 
-    fun removeAlbumFromList(listId: String, albumId: String) {
-        val list = getListById(listId)
-        list?.let { currentList ->
-            val updatedAlbums = currentList.albums.toMutableList()
-            updatedAlbums.removeAll { it.id == albumId }
-            val updatedList = currentList.copy(albums = updatedAlbums)
-            updateList(updatedList)
+    fun unlikeList(listId: String) {
+        val lists = getLists().toMutableList()
+        val listIndex = lists.indexOfFirst { it.id == listId }
+        if (listIndex != -1) {
+            val userList = lists[listIndex]
+            val updatedList = userList.copy(
+                liked = false,
+                likes = maxOf(0, userList.likes - 1)
+            )
+            lists[listIndex] = updatedList
+            saveListsToStorage(lists)
         }
     }
 
-    fun calculateListCompletion(list: UserList): Int {
-        // For now, return 0% - you can implement this based on user listening data
-        return 0
+    fun getListsByCreator(creator: String): List<UserList> {
+        return getLists().filter { it.creator == creator }
     }
 
     fun generateListId(): String {
@@ -80,8 +111,7 @@ class ListManager(private val context: Context) {
     }
 
     fun getCurrentTimestamp(): String {
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        return dateFormat.format(Date())
+        return System.currentTimeMillis().toString()
     }
 
     private fun saveListsToStorage(lists: List<UserList>) {
@@ -91,29 +121,30 @@ class ListManager(private val context: Context) {
 
     private fun convertListsToJson(lists: List<UserList>): String {
         val jsonArray = JSONArray()
-        lists.forEach { list ->
+        lists.forEach { userList ->
             val jsonObject = JSONObject().apply {
-                put("id", list.id)
-                put("name", list.name)
-                put("description", list.description)
-                put("tags", JSONArray(list.tags))
-                put("createdAt", list.createdAt)
-                put("isPublic", list.isPublic)
-
-                // Serialize albums
-                val albumsArray = JSONArray()
-                list.albums.forEach { album ->
-                    val albumObj = JSONObject().apply {
+                put("id", userList.id)
+                put("name", userList.name)
+                put("description", userList.description)
+                put("albums", JSONArray(userList.albums.map { album ->
+                    JSONObject().apply {
                         put("id", album.id)
                         put("title", album.title)
                         put("artist", album.artist)
+                        put("album", album.album)
                         put("releaseYear", album.releaseYear)
+                        put("genre", album.genre)
                         put("coverImage", album.coverImage)
                         put("averageRating", album.averageRating)
+                        put("reviewCount", album.reviewCount)
                     }
-                    albumsArray.put(albumObj)
-                }
-                put("albums", albumsArray)
+                }))
+                put("tags", JSONArray(userList.tags))
+                put("createdAt", userList.createdAt)
+                put("isPublic", userList.isPublic)
+                put("creator", userList.creator)
+                put("likes", userList.likes)
+                put("liked", userList.liked) // Add liked field
             }
             jsonArray.put(jsonObject)
         }
@@ -127,6 +158,25 @@ class ListManager(private val context: Context) {
             for (i in 0 until jsonArray.length()) {
                 val jsonObject = jsonArray.getJSONObject(i)
 
+                // Parse albums
+                val albumsArray = jsonObject.getJSONArray("albums")
+                val albums = mutableListOf<Music>()
+                for (j in 0 until albumsArray.length()) {
+                    val albumObject = albumsArray.getJSONObject(j)
+                    val album = Music(
+                        id = albumObject.getString("id"),
+                        title = albumObject.getString("title"),
+                        artist = albumObject.getString("artist"),
+                        album = albumObject.getString("album"),
+                        releaseYear = albumObject.getInt("releaseYear"),
+                        genre = albumObject.getString("genre"),
+                        coverImage = albumObject.getString("coverImage"),
+                        averageRating = albumObject.getDouble("averageRating"),
+                        reviewCount = albumObject.getInt("reviewCount")
+                    )
+                    albums.add(album)
+                }
+
                 // Parse tags
                 val tagsArray = jsonObject.getJSONArray("tags")
                 val tags = mutableListOf<String>()
@@ -134,33 +184,19 @@ class ListManager(private val context: Context) {
                     tags.add(tagsArray.getString(j))
                 }
 
-                // Parse albums
-                val albumsArray = jsonObject.getJSONArray("albums")
-                val albums = mutableListOf<Music>()
-                for (j in 0 until albumsArray.length()) {
-                    val albumObj = albumsArray.getJSONObject(j)
-                    val album = Music(
-                        id = albumObj.getString("id"),
-                        title = albumObj.getString("title"),
-                        artist = albumObj.getString("artist"),
-                        releaseYear = albumObj.getInt("releaseYear"),
-                        coverImage = albumObj.getString("coverImage"),
-                        averageRating = albumObj.getDouble("averageRating"),
-                        album = albumObj.optString("album", ""), // Add album parameter
-                        genre = albumObj.optString("genre", "")  // Add genre parameter
-                    )
-                    albums.add(album)
-                }
-                val list = UserList(
+                val userList = UserList(
                     id = jsonObject.getString("id"),
                     name = jsonObject.getString("name"),
                     description = jsonObject.getString("description"),
-                    albums = albums, // This ensures albums are properly set
+                    albums = albums,
                     tags = tags,
                     createdAt = jsonObject.getString("createdAt"),
-                    isPublic = jsonObject.getBoolean("isPublic")
+                    isPublic = jsonObject.getBoolean("isPublic"),
+                    creator = jsonObject.getString("creator"),
+                    likes = jsonObject.optInt("likes", 0),
+                    liked = jsonObject.optBoolean("liked", false) // Read liked field
                 )
-                lists.add(list)
+                lists.add(userList)
             }
         } catch (e: Exception) {
             e.printStackTrace()

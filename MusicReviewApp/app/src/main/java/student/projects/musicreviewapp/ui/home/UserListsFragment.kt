@@ -1,17 +1,20 @@
 package student.projects.musicreviewapp.ui.home
 
 import android.os.Bundle
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import student.projects.musicreviewapp.R
 import student.projects.musicreviewapp.auth.ListManager
 import student.projects.musicreviewapp.models.UserList
@@ -39,12 +42,12 @@ class UserListsFragment : Fragment() {
 
     private fun setupViews(view: View) {
         // Back button
-        view.findViewById<ImageView>(R.id.back_button).setOnClickListener {
+        view.findViewById<ImageView>(R.id.back_button)?.setOnClickListener {
             findNavController().popBackStack()
         }
 
         // Add new list button
-        view.findViewById<ImageView>(R.id.add_list_button).setOnClickListener {
+        view.findViewById<ImageView>(R.id.add_list_button)?.setOnClickListener {
             navigateToCreateList()
         }
 
@@ -67,7 +70,7 @@ class UserListsFragment : Fragment() {
     }
 
     private fun setupSearch() {
-        searchInput.addTextChangedListener(object : android.text.TextWatcher {
+        searchInput.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             override fun afterTextChanged(s: android.text.Editable?) {
@@ -105,35 +108,35 @@ class UserListsFragment : Fragment() {
         val shouldShowEmptyState = listsAdapter.itemCount == 0
 
         if (shouldShowEmptyState) {
-            emptyState.visibility = View.VISIBLE
-            listsRecycler.visibility = View.GONE
+            emptyState?.visibility = View.VISIBLE
+            listsRecycler?.visibility = View.GONE
 
             // Update empty state text based on search
             val emptyStateText = requireView().findViewById<TextView>(R.id.empty_state_text)
             val emptyStateSubtext = requireView().findViewById<TextView>(R.id.empty_state_subtext)
 
             if (searchQuery.isNotBlank()) {
-                emptyStateText.text = "No lists found"
-                emptyStateSubtext.text = "Try adjusting your search terms"
+                emptyStateText?.text = "No lists found"
+                emptyStateSubtext?.text = "Try adjusting your search terms"
             } else {
-                emptyStateText.text = "No lists yet"
-                emptyStateSubtext.text = "Create your first list to organize your favorite albums"
+                emptyStateText?.text = "No lists yet"
+                emptyStateSubtext?.text = "Create your first list to organize your favorite albums"
             }
         } else {
-            emptyState.visibility = View.GONE
-            listsRecycler.visibility = View.VISIBLE
+            emptyState?.visibility = View.GONE
+            listsRecycler?.visibility = View.VISIBLE
         }
     }
 
     private fun navigateToCreateList() {
-        findNavController().navigate(R.id.createListFragment)
+        findNavController().navigate(R.id.action_userListsFragment_to_createListFragment)
     }
 
     private fun navigateToListDetail(list: UserList) {
         val bundle = Bundle().apply {
             putParcelable("list", list)
         }
-        findNavController().navigate(R.id.listDetailFragment, bundle)
+        findNavController().navigate(R.id.action_userListsFragment_to_listDetailFragment, bundle)
     }
 
     private fun showDeleteConfirmation(list: UserList) {
@@ -169,9 +172,11 @@ class UserListsFragment : Fragment() {
         private var lists = listOf<UserList>()
 
         class ListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-            val listName: TextView = itemView.findViewById(R.id.list_name)
-            val albumCount: TextView = itemView.findViewById(R.id.album_count)
-            val completionText: TextView = itemView.findViewById(R.id.completion_text)
+            val listTitle: TextView = itemView.findViewById(R.id.list_title)
+            val listCreator: TextView = itemView.findViewById(R.id.list_creator)
+            val listDescription: TextView = itemView.findViewById(R.id.list_description)
+            val likeCount: TextView = itemView.findViewById(R.id.like_count)
+            val albumCoversContainer: LinearLayout = itemView.findViewById(R.id.album_covers_container)
             val deleteButton: ImageView = itemView.findViewById(R.id.delete_button)
         }
 
@@ -184,23 +189,38 @@ class UserListsFragment : Fragment() {
         override fun onBindViewHolder(holder: ListViewHolder, position: Int) {
             val list = lists[position]
 
-            holder.listName.text = list.name
+            holder.listTitle.text = list.name
+            holder.listCreator.text = "by ${list.creator}"
+            holder.listDescription.text = list.description
+            holder.likeCount.text = "${list.likes} likes"
 
-            val albumCount = list.albums?.size ?: 0
-            holder.albumCount.text = "$albumCount album${if (albumCount != 1) "s" else ""}"
+            // Load album covers
+            holder.albumCoversContainer.removeAllViews()
+            list.albums.take(3).forEach { album ->
+                val albumCover = LayoutInflater.from(holder.itemView.context)
+                    .inflate(R.layout.album_cover_frame_small, holder.albumCoversContainer, false)
+                val imageView = albumCover.findViewById<ImageView>(R.id.album_cover)
 
-            // Calculate completion percentage
-            val completion = 0 // You can implement this based on user listening data
-            holder.completionText.text = "$completion%"
+                if (album.coverImage.isNotEmpty()) {
+                    Glide.with(holder.itemView.context)
+                        .load(album.coverImage)
+                        .placeholder(R.drawable.album_placeholder)
+                        .error(R.drawable.album_placeholder)
+                        .into(imageView)
+                } else {
+                    imageView.setImageResource(R.drawable.album_placeholder)
+                }
 
-            // List click
-            holder.itemView.setOnClickListener {
-                onListClick(list)
+                holder.albumCoversContainer.addView(albumCover)
             }
 
-            // Delete button click
+            // Set up delete button
             holder.deleteButton.setOnClickListener {
                 onListDelete(list)
+            }
+
+            holder.itemView.setOnClickListener {
+                onListClick(list)
             }
         }
 

@@ -6,9 +6,10 @@
     android:padding="16dp"
     android:background="?attr/selectableItemBackground">
 
+    <!-- Album Cover -->
     <FrameLayout
-        android:layout_width="60dp"
-        android:layout_height="60dp"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
         android:layout_marginEnd="16dp">
 
         <ImageView
@@ -20,13 +21,14 @@
 
     </FrameLayout>
 
+    <!-- Review Content -->
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:orientation="vertical"
-        android:gravity="center_vertical">
+        android:orientation="vertical">
 
+        <!-- Album Title and Artist -->
         <TextView
             android:id="@+id/album_title"
             android:layout_width="match_parent"
@@ -42,7 +44,39 @@
             android:layout_height="wrap_content"
             android:text="Artist Name"
             android:textSize="14sp"
-            android:textColor="#666666" />
+            android:textColor="#666666"
+            android:layout_marginBottom="4dp" />
+
+        <!-- Rating -->
+        <TextView
+            android:id="@+id/rating"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="★★★★★"
+            android:textSize="14sp"
+            android:textColor="#8B7D9E"
+            android:layout_marginBottom="4dp" />
+
+        <!-- Review Content -->
+        <TextView
+            android:id="@+id/review_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Review content goes here..."
+            android:textSize="14sp"
+            android:textColor="#000000"
+            android:maxLines="2"
+            android:ellipsize="end" />
+
+        <!-- User Name -->
+        <TextView
+            android:id="@+id/user_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Username"
+            android:textSize="12sp"
+            android:textColor="#999999"
+            android:layout_marginTop="4dp" />
 
     </LinearLayout>
 

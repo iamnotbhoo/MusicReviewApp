@@ -12,5 +12,7 @@ data class UserList(
     val tags: List<String> = emptyList(),
     val createdAt: String = "",
     val isPublic: Boolean = true,
-    val creator: String = ""
+    val creator: String = "",
+    val likes: Int = 0,
+    val liked: Boolean = false
 ) : Parcelable

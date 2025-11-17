@@ -2,46 +2,164 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
+    android:orientation="horizontal"
     android:padding="16dp"
-    android:background="?android:attr/selectableItemBackground">
+    android:background="?attr/selectableItemBackground">
 
-    <!-- User Info and Timestamp -->
+    <!-- Album Cover -->
+    <ImageView
+        android:id="@+id/album_cover"
+        android:layout_width="75dp"
+        android:layout_height="75dp"
+        android:src="@drawable/album_placeholder"
+        android:scaleType="centerCrop"
+        android:background="@drawable/rounded_album"
+        android:layout_marginEnd="12dp" />
+
+    <!-- Right Column -->
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:layout_weight="1"
+        android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/review_user_name"
-            android:layout_width="0dp"
+        <!-- Title Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Username"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:textColor="#000000" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
+            <TextView
+                android:id="@+id/album_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Album Title"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#000000" />
+
+            <TextView
+                android:id="@+id/album_year"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=" 2024"
+                android:textSize="14sp"
+                android:textColor="#666666" />
+        </LinearLayout>
+
+        <!-- Rating + Likes + User -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp">
+
+            <!-- Star Rating -->
+            <ImageView
+                android:id="@+id/star1"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:src="@drawable/ic_star_purple" />
+
+            <ImageView
+                android:id="@+id/star2"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:src="@drawable/ic_star_purple" />
+
+            <ImageView
+                android:id="@+id/star3"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:src="@drawable/ic_star_purple" />
+
+            <ImageView
+                android:id="@+id/star4"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:src="@drawable/ic_star_purple" />
+
+            <ImageView
+                android:id="@+id/star5"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:src="@drawable/ic_star_purple" />
+
+            <!-- Heart and Like Count -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginStart="6dp">
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:src="@drawable/ic_heart_orange" />
+
+                <TextView
+                    android:id="@+id/like_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textSize="12sp"
+                    android:textColor="#666666"
+                    android:layout_marginStart="4dp" />
+            </LinearLayout>
+
+            <!-- Spacer -->
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+            <!-- User Info -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/user_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="User"
+                    android:textSize="12sp"
+                    android:textColor="#666666"
+                    android:layout_marginEnd="4dp" />
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_user_circle" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Review Content -->
+        <TextView
+            android:id="@+id/review_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Review content goes here..."
+            android:textColor="#000000"
+            android:textSize="14sp"
+            android:lineSpacingExtra="4dp"
+            android:paddingTop="4dp" />
+
+        <!-- Timestamp -->
         <TextView
             android:id="@+id/review_timestamp"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="2 days ago"
+            android:text="2 hours ago"
             android:textSize="12sp"
-            android:textColor="#666666" />
+            android:textColor="#999999"
+            android:paddingTop="2dp" />
 
     </LinearLayout>
-
-    <!-- Review Content -->
-    <TextView
-        android:id="@+id/review_content"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Review content goes here..."
-        android:textSize="14sp"
-        android:textColor="#333333"
-        android:lineSpacingExtra="4dp"
-        android:layout_marginTop="8dp" />
-
 </LinearLayout>

@@ -64,4 +64,11 @@
         android:contentDescription="@string/view_album"
         app:tint="#808080" />
 
+    <View
+        android:id="@+id/selected_indicator"
+        android:layout_width="match_parent"
+        android:layout_height="4dp"
+        android:background="#FF86739E"
+        android:visibility="gone" />
+
 </LinearLayout>
