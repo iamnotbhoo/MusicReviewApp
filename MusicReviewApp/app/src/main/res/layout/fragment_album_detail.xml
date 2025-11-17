@@ -122,15 +122,41 @@
                             android:textColor="#808080"
                             android:textSize="13sp"
                             android:layout_marginTop="8dp" />
+
+                        <!-- Listen Now Button -->
+                        <androidx.appcompat.widget.AppCompatButton
+                            android:id="@+id/listen_now_button"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:background="@drawable/rounded_button_background"
+                            android:text="Listen on Spotify"
+                            android:textColor="#FFFFFF"
+                            android:textSize="12sp"
+                            android:paddingStart="16dp"
+                            android:paddingEnd="16dp"
+                            android:paddingTop="8dp"
+                            android:paddingBottom="8dp"
+                            android:drawableStart="@drawable/ic_spotify"
+                            android:drawablePadding="6dp"
+                            android:visibility="gone" />
                     </LinearLayout>
 
-                    <ImageView
-                        android:id="@+id/album_thumbnail"
-                        android:layout_width="84dp"
-                        android:layout_height="112dp"
-                        android:layout_marginStart="12dp"
-                        android:scaleType="centerCrop"
-                        android:background="@drawable/rounded_album" />
+                    <!-- EVEN BIGGER ALBUM COVER - Updated size -->
+                    <FrameLayout
+                        android:layout_width="140dp"
+                        android:layout_height="200dp"
+                        android:layout_marginStart="12dp">
+
+                        <ImageView
+                            android:id="@+id/album_thumbnail"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:scaleType="centerCrop"
+                            android:background="@drawable/rounded_album_background"
+                            android:clipToOutline="true" />
+
+                    </FrameLayout>
                 </LinearLayout>
 
                 <!-- ALBUM DESCRIPTION SECTION -->
@@ -173,6 +199,27 @@
                     android:lineSpacingExtra="4dp"
                     android:layout_marginTop="12dp" />
 
+                <!-- GENRE SECTION -->
+                <TextView
+                    android:id="@+id/genre_heading"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="GENRE"
+                    android:textColor="#555555"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="22dp" />
+
+                <TextView
+                    android:id="@+id/album_genre"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="#B0B0B0"
+                    android:textSize="14sp"
+                    android:lineSpacingExtra="4dp"
+                    android:layout_marginTop="12dp" />
+
+                <!-- Rating label -->
                 <!-- Rating label -->
                 <TextView
                     android:id="@+id/ratings_label"
@@ -184,56 +231,64 @@
                     android:textSize="14sp"
                     android:layout_marginTop="26dp" />
 
-                <!-- Histogram row -->
+                <!-- ===== EXACT MATCH TO YOUR IMAGE ===== -->
                 <LinearLayout
                     android:id="@+id/histogram_row"
                     android:layout_width="match_parent"
-                    android:layout_height="120dp"
+                    android:layout_height="90dp"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
                     android:layout_marginTop="10dp">
 
+                    <!-- LEFT: Single green star -->
+                    <TextView
+                        android:id="@+id/left_single_star"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="★"
+                        android:textSize="18sp"
+                        android:textColor="#FF86739E"
+                        android:layout_marginEnd="12dp" />
+
+                    <!-- MIDDLE: Perfectly centered histogram -->
                     <LinearLayout
                         android:id="@+id/histogram_container"
                         android:layout_width="0dp"
-                        android:layout_weight="1"
                         android:layout_height="match_parent"
+                        android:layout_weight="1"
                         android:orientation="horizontal"
-                        android:gravity="bottom"
-                        android:weightSum="10"
-                        android:paddingStart="4dp"
-                        android:paddingEnd="4dp" />
+                        android:gravity="center|bottom"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="8dp" />
 
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
                         android:orientation="vertical"
                         android:gravity="center"
-                        android:layout_marginStart="12dp">
+                        android:paddingStart="12dp">
 
                         <TextView
                             android:id="@+id/album_rating_text"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:text="4.8"
                             android:textColor="#555555"
-                            android:textStyle="bold"
-                            android:textSize="20sp" />
+                            android:textSize="22sp"
+                            android:textStyle="bold" />
 
                         <TextView
-                            android:id="@+id/rating_stars_note"
+                            android:id="@+id/right_side_stars"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="★★★★★"
-                            android:textSize="12sp"
-                            android:layout_marginTop="6dp" />
-                    </LinearLayout>
-                </LinearLayout>
+                            android:textSize="14sp"
+                            android:textColor="#FF86739E"
+                            android:layout_marginTop="4dp" />
 
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="#1F1F1F"
-                    android:layout_marginTop="18dp" />
+                    </LinearLayout>
+
+                </LinearLayout>
 
                 <!-- Footer -->
                 <LinearLayout

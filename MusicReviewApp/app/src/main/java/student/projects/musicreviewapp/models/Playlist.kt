@@ -12,11 +12,3 @@ data class Playlist(
     val coverImage: String? = null
 )
 
-@Parcelize
-data class UserList(
-    val id: String,
-    val name: String,
-    val creator: String,
-    val description: String,
-    val items: List<Music> = emptyList()
-) : Parcelable

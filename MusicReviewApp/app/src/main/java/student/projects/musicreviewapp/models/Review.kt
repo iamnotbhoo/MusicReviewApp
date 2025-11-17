@@ -15,7 +15,6 @@ data class Review(
     val musicTitle: String = "",
     val musicYear: String = "",
     val musicCoverUrl: String? = null,
-    // NEW FIELDS FOR REVIEW SYSTEM
     val rating: Int = 0,
     val tags: List<String> = emptyList(),
     val isFirstListen: Boolean = true,

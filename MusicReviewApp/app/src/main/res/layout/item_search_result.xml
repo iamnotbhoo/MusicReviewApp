@@ -8,66 +8,60 @@
     android:padding="16dp"
     android:gravity="center_vertical">
 
+    <!-- Album Cover -->
+    <ImageView
+        android:id="@+id/album_cover"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:src="@drawable/album_placeholder"
+        android:scaleType="centerCrop"
+        android:background="@drawable/rounded_album_background"
+        android:clipToOutline="true" />
+
+    <!-- Album Info -->
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp">
 
         <TextView
-            android:id="@+id/list_name"
+            android:id="@+id/album_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="List Name"
+            android:text="Album Title"
             android:textColor="#000000"
             android:textSize="16sp"
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/album_count"
+            android:id="@+id/album_artist"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="0 albums"
+            android:text="Artist Name"
             android:textColor="#808080"
             android:textSize="14sp"
-            android:layout_marginTop="4dp" />
-
-    </LinearLayout>
-
-    <!-- Completion percentage with eye icon -->
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:layout_marginEnd="12dp">
-
-        <ImageView
-            android:layout_width="16dp"
-            android:layout_height="16dp"
-            android:src="@drawable/ic_visibility"
-            android:contentDescription="@string/completion"
-            app:tint="#808080"
-            android:layout_marginEnd="4dp" />
+            android:layout_marginTop="2dp" />
 
         <TextView
-            android:id="@+id/completion_text"
+            android:id="@+id/album_year"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="0%"
+            android:text="2024"
             android:textColor="#808080"
-            android:textSize="14sp" />
+            android:textSize="12sp"
+            android:layout_marginTop="2dp" />
 
     </LinearLayout>
 
-    <!-- Delete Button -->
+    <!-- Navigation Arrow (instead of Add button) -->
     <ImageView
-        android:id="@+id/delete_button"
         android:layout_width="24dp"
         android:layout_height="24dp"
-        android:src="@drawable/ic_delete"
-        android:contentDescription="@string/delete"
-        app:tint="#FF4444"
-        android:padding="4dp" />
+        android:src="@drawable/ic_arrow_forward"
+        android:contentDescription="@string/view_album"
+        app:tint="#808080" />
 
 </LinearLayout>

@@ -1,8 +1,10 @@
 package student.projects.musicreviewapp.ui.home
 
 import android.app.Dialog
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.util.TypedValue
@@ -25,6 +27,10 @@ import com.bumptech.glide.Glide
 import student.projects.musicreviewapp.R
 import student.projects.musicreviewapp.models.AlbumDetails
 import student.projects.musicreviewapp.models.Music
+import student.projects.musicreviewapp.auth.PlaylistManager
+import student.projects.musicreviewapp.auth.ReviewManager
+import student.projects.musicreviewapp.auth.AuthManager
+import student.projects.musicreviewapp.models.Review
 import student.projects.musicreviewapp.network.SpotifyApiService
 import android.content.res.ColorStateList
 import java.util.Calendar
@@ -36,11 +42,18 @@ class AlbumDetailFragment : Fragment() {
     private lateinit var loadingIndicator: ProgressBar
     private lateinit var contentContainer: LinearLayout
 
+    private lateinit var playlistManager: PlaylistManager
+    private lateinit var reviewManager: ReviewManager
+    private lateinit var authManager: AuthManager
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         spotifyApiService = SpotifyApiService(requireContext())
+        playlistManager = PlaylistManager(requireContext())
+        reviewManager = ReviewManager(requireContext())
+        authManager = AuthManager(requireContext())
         return inflater.inflate(R.layout.fragment_album_detail, container, false)
     }
 
@@ -69,6 +82,8 @@ class AlbumDetailFragment : Fragment() {
             override fun onSuccess(result: AlbumDetails) {
                 hideLoading()
                 setupViewsWithRealData(result)
+                // Setup ratings system AFTER loading album data
+                setupRatingsSystem()
                 Log.d("AlbumDetail", "Loaded album details: ${result.title} by ${result.artist}")
             }
 
@@ -77,9 +92,171 @@ class AlbumDetailFragment : Fragment() {
                 showToast("Couldn't load album details: $error")
                 // Fallback to basic data
                 setupViewsWithBasicData()
+                // Setup ratings system with basic data
+                setupRatingsSystem()
                 Log.e("AlbumDetail", "Error loading album details: $error")
             }
         })
+    }
+
+    private fun setupRatingsSystem() {
+        updateRatingsHistogram()
+        checkUserReviewStatus()
+    }
+
+    private fun updateRatingsHistogram() {
+        val histogramContainer = view?.findViewById<LinearLayout>(R.id.histogram_container)
+        val ratingText = view?.findViewById<TextView>(R.id.album_rating_text)
+
+        // Get all reviews for this album
+        val reviews = getReviewsForAlbum(album.id)
+
+        Log.d("RatingsDebug", "Found ${reviews.size} reviews for album ${album.id}")
+
+        if (reviews.isEmpty()) {
+            // No ratings yet - show all bars at zero
+            Log.d("RatingsDebug", "No reviews found, showing empty histogram")
+            populateEmptyHistogram(histogramContainer)
+            ratingText?.text = "0.0"
+        } else {
+            // Calculate rating distribution
+            val ratingDistribution = calculateRatingDistribution(reviews)
+            Log.d("RatingsDebug", "Rating distribution: $ratingDistribution")
+            populateHistogramWithData(histogramContainer, ratingDistribution)
+
+            // Calculate average rating
+            val averageRating = calculateAverageRating(reviews)
+            ratingText?.text = String.format("%.1f", averageRating)
+        }
+    }
+
+    private fun getReviewsForAlbum(albumId: String): List<Review> {
+        return reviewManager.getReviews().filter { it.musicId == albumId }
+    }
+
+    private fun calculateRatingDistribution(reviews: List<Review>): Map<Int, Int> {
+        val distribution = mutableMapOf(
+            1 to 0, 2 to 0, 3 to 0, 4 to 0, 5 to 0
+        )
+
+        reviews.forEach { review ->
+            val rating = review.rating.coerceIn(1, 5)
+            distribution[rating] = distribution.getOrDefault(rating, 0) + 1
+        }
+
+        return distribution
+    }
+
+    private fun calculateAverageRating(reviews: List<Review>): Double {
+        if (reviews.isEmpty()) return 0.0
+        val total = reviews.sumOf { it.rating.toDouble() }
+        return total / reviews.size
+    }
+
+    private fun populateEmptyHistogram(container: LinearLayout?) {
+        container?.removeAllViews()
+
+        for (rating in 5 downTo 1) {
+            val bar = createHistogramBar(0, 1, rating)
+            container?.addView(bar)
+        }
+    }
+
+    private fun populateHistogramWithData(container: LinearLayout?, distribution: Map<Int, Int>) {
+        container?.removeAllViews()
+
+        val totalReviews = distribution.values.sum()
+        val maxCount = distribution.values.maxOrNull() ?: 1
+
+        for (rating in 5 downTo 1) {
+            val count = distribution[rating] ?: 0
+            val bar = createHistogramBar(count, maxCount, rating)
+            container?.addView(bar)
+        }
+    }
+
+    private fun createHistogramBar(count: Int, maxCount: Int, rating: Int): View {
+        val barLayout = LayoutInflater.from(requireContext())
+            .inflate(R.layout.histogram_bar_item, null)
+
+        val bar = barLayout.findViewById<View>(R.id.bar)
+
+        // Height
+        val maxBarHeight = dpToPx(80f)
+        val height = if (count > 0 && maxCount > 0) {
+            (count.toFloat() / maxCount * maxBarHeight).toInt()
+        } else {
+            dpToPx(4f)
+        }
+
+        val params = bar.layoutParams as LinearLayout.LayoutParams
+        params.height = height
+        bar.layoutParams = params
+
+        val barColor = ContextCompat.getColor(requireContext(), R.color.sign_in_button)
+        bar.background.setTint(barColor)
+
+        return barLayout
+    }
+
+
+
+    private fun checkUserReviewStatus() {
+        val reviewFooter = view?.findViewById<LinearLayout>(R.id.review_footer)
+        val footerAlbumCover = view?.findViewById<ImageView>(R.id.footer_album_cover)
+        val footerReviewText = view?.findViewById<TextView>(R.id.footer_review_text)
+        val footerReviewStars = view?.findViewById<TextView>(R.id.footer_review_stars)
+
+        // Check if current user has reviewed this album
+        val userReview = getUserReviewForAlbum(album.id)
+
+        Log.d("RatingsDebug", "User review check: ${userReview != null}")
+        Log.d("RatingsDebug", "Current user ID: ${getCurrentUserId()}")
+
+        if (userReview != null) {
+            // User has reviewed - show footer
+            reviewFooter?.visibility = View.VISIBLE
+            Log.d("RatingsDebug", "Showing review footer with rating: ${userReview.rating}")
+
+            // Set album cover
+            if (album.coverImage.isNotEmpty()) {
+                Glide.with(requireContext())
+                    .load(album.coverImage)
+                    .placeholder(R.drawable.album_placeholder)
+                    .error(R.drawable.album_placeholder)
+                    .into(footerAlbumCover!!)
+            } else {
+                footerAlbumCover?.setImageResource(R.drawable.album_placeholder)
+            }
+
+            // Set review text
+            footerReviewText?.text = "You've reviewed this album"
+
+            // Set star rating
+            footerReviewStars?.text = "★".repeat(userReview.rating) + "☆".repeat(5 - userReview.rating)
+
+        } else {
+            // User hasn't reviewed - hide footer
+            reviewFooter?.visibility = View.GONE
+            Log.d("RatingsDebug", "Hiding review footer - no user review found")
+        }
+    }
+
+    private fun getUserReviewForAlbum(albumId: String): Review? {
+        val currentUserId = getCurrentUserId()
+        return reviewManager.getReviews().find {
+            it.musicId == albumId && it.userId == currentUserId
+        }
+    }
+
+    private fun getCurrentUserId(): String {
+        return authManager.getCurrentUser() ?: "default_user"
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.d("RatingsDebug", "AlbumDetailFragment onResume - refreshing ratings")
+        setupRatingsSystem()
     }
 
     private fun setupViewsWithRealData(albumDetails: AlbumDetails) {
@@ -90,9 +267,10 @@ class AlbumDetailFragment : Fragment() {
             val yearDuration = v.findViewById<TextView>(R.id.album_year_duration)
             val albumDescription = v.findViewById<TextView>(R.id.album_description)
             val albumLabel = v.findViewById<TextView>(R.id.album_label)
-            val ratingText = v.findViewById<TextView>(R.id.album_rating_text)
-            val histogramContainer = v.findViewById<LinearLayout>(R.id.histogram_container)
+            val albumGenre = v.findViewById<TextView>(R.id.album_genre)
+            val genreHeading = v.findViewById<TextView>(R.id.genre_heading)
             val labelHeading = v.findViewById<TextView>(R.id.label_heading)
+            val listenNowButton = v.findViewById<androidx.appcompat.widget.AppCompatButton>(R.id.listen_now_button)
 
             // Load high-quality album art
             if (albumDetails.largeCoverImage.isNotEmpty()) {
@@ -115,7 +293,10 @@ class AlbumDetailFragment : Fragment() {
                     .load(albumDetails.coverImage)
                     .placeholder(R.drawable.album_placeholder)
                     .error(R.drawable.album_placeholder)
+                    .centerCrop()
                     .into(thumbnail)
+            } else {
+                thumbnail.setImageResource(R.drawable.album_placeholder)
             }
 
             // Set artist name
@@ -124,7 +305,17 @@ class AlbumDetailFragment : Fragment() {
             // Set release year, duration, and track count
             yearDuration.text = "${albumDetails.formattedReleaseDate} • ${albumDetails.formattedDuration} • ${albumDetails.totalTracks} tracks"
 
-            // ========== LABEL SECTION ==========
+            // LISTEN NOW BUTTON
+            if (albumDetails.spotifyUrl.isNotEmpty()) {
+                listenNowButton.visibility = View.VISIBLE
+                listenNowButton.setOnClickListener {
+                    openSpotifyAlbum(albumDetails.spotifyUrl)
+                }
+            } else {
+                listenNowButton.visibility = View.GONE
+            }
+
+            // LABEL SECTION
             if (albumDetails.label.isNotEmpty() && albumDetails.label != "Unknown Label") {
                 albumLabel.text = albumDetails.label
                 albumLabel.isVisible = true
@@ -134,13 +325,21 @@ class AlbumDetailFragment : Fragment() {
                 labelHeading.isVisible = false
             }
 
-            // ========== ALBUM DESCRIPTION SECTION ==========
-            // Create a more detailed album description
+            // GENRE SECTION
+            if (albumDetails.genres.isNotEmpty()) {
+                val genresText = albumDetails.genres.joinToString(", ")
+                albumGenre.text = genresText
+                albumGenre.isVisible = true
+                genreHeading.isVisible = true
+            } else {
+                albumGenre.isVisible = false
+                genreHeading.isVisible = false
+            }
+
+            // ALBUM DESCRIPTION SECTION
             val description = buildString {
-                // Start with artist and album context
                 append("${albumDetails.artist}'s \"${albumDetails.title}\" ")
 
-                // Add release year context
                 val currentYear = Calendar.getInstance().get(Calendar.YEAR)
                 val releaseYear = albumDetails.releaseDate.split("-")[0].toIntOrNull() ?: currentYear
                 val yearsAgo = currentYear - releaseYear
@@ -154,7 +353,6 @@ class AlbumDetailFragment : Fragment() {
                     append("is a ${yearsAgo}-year-old album")
                 }
 
-                // Add genre context
                 if (albumDetails.genres.isNotEmpty()) {
                     val primaryGenre = albumDetails.genres.first()
                     append(" in the ${primaryGenre.toLowerCase()} genre")
@@ -166,11 +364,9 @@ class AlbumDetailFragment : Fragment() {
 
                 append(".")
 
-                // Add track count context
                 append(" The album features ${albumDetails.totalTracks} track${if (albumDetails.totalTracks > 1) "s" else ""}")
                 append(" with a total runtime of ${albumDetails.formattedDuration}.")
 
-                // Add popularity context
                 when {
                     albumDetails.popularity > 80 -> {
                         append(" It has achieved widespread critical and commercial success,")
@@ -193,12 +389,21 @@ class AlbumDetailFragment : Fragment() {
 
             albumDescription.text = description
 
-            // Use popularity as rating (converted to 0-5 scale)
-            val popularityRating = (albumDetails.popularity / 20.0).coerceAtMost(5.0)
-            ratingText.text = String.format("%.1f", popularityRating)
+            // REMOVED: Don't set rating or histogram here - let setupRatingsSystem() handle it
+        }
+    }
 
-            // Update histogram with popularity-based data
-            populateHistogramWithPopularity(histogramContainer, albumDetails.popularity)
+    private fun openSpotifyAlbum(spotifyUrl: String) {
+        try {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(spotifyUrl))
+            startActivity(intent)
+        } catch (e: Exception) {
+            try {
+                val webIntent = Intent(Intent.ACTION_VIEW, Uri.parse(spotifyUrl.replace("spotify:", "https://open.spotify.com/")))
+                startActivity(webIntent)
+            } catch (e2: Exception) {
+                showToast("Could not open Spotify")
+            }
         }
     }
 
@@ -211,8 +416,9 @@ class AlbumDetailFragment : Fragment() {
             val desc = v.findViewById<TextView>(R.id.album_description)
             val albumLabel = v.findViewById<TextView>(R.id.album_label)
             val labelHeading = v.findViewById<TextView>(R.id.label_heading)
-            val ratingText = v.findViewById<TextView>(R.id.album_rating_text)
-            val histogramContainer = v.findViewById<LinearLayout>(R.id.histogram_container)
+            val albumGenre = v.findViewById<TextView>(R.id.album_genre)
+            val genreHeading = v.findViewById<TextView>(R.id.genre_heading)
+            val listenNowButton = v.findViewById<androidx.appcompat.widget.AppCompatButton>(R.id.listen_now_button)
 
             // Load basic images
             if (album.coverImage.isNotEmpty()) {
@@ -226,6 +432,7 @@ class AlbumDetailFragment : Fragment() {
                     .load(album.coverImage)
                     .placeholder(R.drawable.album_placeholder)
                     .error(R.drawable.album_placeholder)
+                    .centerCrop()
                     .into(thumbnail)
             } else {
                 poster.setImageResource(R.drawable.album_placeholder)
@@ -236,96 +443,15 @@ class AlbumDetailFragment : Fragment() {
             artistName.text = album.artist
             yearDuration.text = "${album.releaseYear} • ${getAlbumDuration()}mins"
             desc.text = getAlbumDescription(album)
-            ratingText.text = String.format("%.1f", album.averageRating)
 
-            // Hide label section in basic data mode
+            // Hide sections in basic data mode
             albumLabel.isVisible = false
             labelHeading.isVisible = false
+            albumGenre.isVisible = false
+            genreHeading.isVisible = false
+            listenNowButton.visibility = View.GONE
 
-            // Basic histogram
-            populateHistogramWithRating(histogramContainer, album.averageRating)
-        }
-    }
-
-    private fun populateHistogramWithPopularity(container: LinearLayout, popularity: Int) {
-        container.removeAllViews()
-
-        // Create a distribution based on popularity (0-100 converted to histogram bars)
-        val normalizedPopularity = (popularity / 10.0) // Convert to 0-10 scale
-        val barHeights = IntArray(10) { i ->
-            val distance = kotlin.math.abs(i - normalizedPopularity)
-            val value = (10.0 - distance * 1.5).coerceAtLeast(0.0)
-            (value * 8).toInt() + 10 // Scale to reasonable bar heights
-        }
-
-        val maxBarHeight = barHeights.maxOrNull() ?: 1
-
-        for (i in barHeights.indices) {
-            val bar = View(requireContext())
-
-            val heightPx = dpToPx(barHeights[i].toFloat())
-            val minHeightPx = dpToPx(10f)
-
-            val params = LinearLayout.LayoutParams(0, heightPx.coerceAtLeast(minHeightPx))
-            params.weight = 1f
-            params.marginStart = dpToPx(2f)
-            params.marginEnd = dpToPx(2f)
-            params.gravity = android.view.Gravity.BOTTOM
-            bar.layoutParams = params
-
-            val drawable = ContextCompat.getDrawable(requireContext(), R.drawable.histogram_bar)
-
-            // Color bars based on position (active for bars around the popularity level)
-            val isActiveBar = i < normalizedPopularity
-            if (isActiveBar) {
-                drawable?.setTint(ContextCompat.getColor(requireContext(), android.R.color.white))
-            } else {
-                drawable?.setTint(Color.parseColor("#404040"))
-            }
-
-            bar.background = drawable
-            container.addView(bar)
-        }
-    }
-
-    private fun populateHistogramWithRating(container: LinearLayout, rating: Double) {
-        container.removeAllViews()
-
-        val center = ((rating.coerceIn(0.0, 5.0) / 5.0) * 9.0).toInt()
-        val baseCounts = IntArray(10) { i ->
-            val dist = kotlin.math.abs(i - center)
-            val value = (10.0 - dist * 2.2).coerceAtLeast(0.0)
-            value.toInt()
-        }
-
-        val maxBarHeight = 90f
-        val maxCount = baseCounts.maxOrNull() ?: 1
-        val activeIndex = center
-
-        for (i in baseCounts.indices) {
-            val bar = View(requireContext())
-
-            val heightPx = dpToPx(
-                ((baseCounts[i].toFloat() / maxCount.toFloat()) * maxBarHeight)
-            )
-
-            val params = LinearLayout.LayoutParams(0, heightPx)
-            params.weight = 1f
-            params.marginStart = dpToPx(2f)
-            params.marginEnd = dpToPx(2f)
-            params.gravity = android.view.Gravity.BOTTOM
-            bar.layoutParams = params
-
-            val drawable = ContextCompat.getDrawable(requireContext(), R.drawable.histogram_bar)
-
-            if (i == activeIndex) {
-                drawable?.setTint(ContextCompat.getColor(requireContext(), android.R.color.white))
-            } else {
-                drawable?.setTint(Color.parseColor("#404040"))
-            }
-
-            bar.background = drawable
-            container.addView(bar)
+            // REMOVED: Don't set rating or histogram here - let setupRatingsSystem() handle it
         }
     }
 
@@ -350,7 +476,7 @@ class AlbumDetailFragment : Fragment() {
         )
         dialog.window?.setGravity(Gravity.CENTER)
 
-        // ===== CONNECT BUTTONS =====
+        // CONNECT BUTTONS
         val listenBtn = view.findViewById<LinearLayout>(R.id.action_listen)
         val listenIcon = view.findViewById<ImageView>(R.id.icon_listen)
         val listenText = view.findViewById<TextView>(R.id.text_listen)
@@ -397,7 +523,7 @@ class AlbumDetailFragment : Fragment() {
             }
         }
 
-        // REVIEW button - navigate to review page
+        // REVIEW button
         reviewBtn.setOnClickListener {
             dialog.dismiss()
             navigateToReviewPage()
@@ -405,7 +531,7 @@ class AlbumDetailFragment : Fragment() {
 
         // Add to Playlist button
         addToPlaylistBtn.setOnClickListener {
-            android.widget.Toast.makeText(requireContext(), "Added to playlist", android.widget.Toast.LENGTH_SHORT).show()
+            addToPlaylist()
             dialog.dismiss()
         }
 
@@ -429,6 +555,11 @@ class AlbumDetailFragment : Fragment() {
         }
 
         dialog.show()
+    }
+
+    private fun addToPlaylist() {
+        playlistManager.addToPlaylist(album)
+        showToast("Added to playlist")
     }
 
     private fun navigateToReviewPage() {

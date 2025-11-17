@@ -16,10 +16,12 @@ import com.bumptech.glide.Glide
 import student.projects.musicreviewapp.R
 import student.projects.musicreviewapp.models.Music
 import student.projects.musicreviewapp.models.Review
+import student.projects.musicreviewapp.auth.ReviewManager
 
 class UserAlbumsFragment : Fragment() {
 
     private lateinit var albumsAdapter: UserAlbumsAdapter
+    private lateinit var reviewManager: ReviewManager
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -30,6 +32,7 @@ class UserAlbumsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        reviewManager = ReviewManager(requireContext())
 
         setupViews(view)
         loadUserAlbums()
@@ -45,7 +48,7 @@ class UserAlbumsFragment : Fragment() {
         val albumsRecycler = view.findViewById<RecyclerView>(R.id.albums_recycler)
         albumsAdapter = UserAlbumsAdapter()
 
-        // ADDED: Set click listener for albums
+        // Set click listener for albums
         albumsAdapter.onAlbumClick = { userAlbum ->
             navigateToReviewDetail(userAlbum)
         }
@@ -56,16 +59,14 @@ class UserAlbumsFragment : Fragment() {
         }
     }
 
-    // ADDED: Navigate to review detail
     private fun navigateToReviewDetail(userAlbum: UserAlbum) {
-        // Create a review object from the album data
         val review = Review(
-            id = userAlbum.music.id,
-            userId = "1", // Current user ID
+            id = userAlbum.reviewId,
+            userId = "1",
             userName = "iamnotbhoo",
             userPhotoUrl = null,
-            content = getReviewContentForAlbum(userAlbum),
-            timestamp = "Listened recently", // You can use actual timestamp
+            content = userAlbum.reviewContent,
+            timestamp = userAlbum.timestamp,
             musicId = userAlbum.music.id,
             musicTitle = userAlbum.music.title,
             musicYear = userAlbum.music.releaseYear.toString(),
@@ -81,113 +82,45 @@ class UserAlbumsFragment : Fragment() {
         findNavController().navigate(R.id.action_userAlbumsFragment_to_reviewDetailFragment, bundle)
     }
 
-    // ADDED: Generate review content based on album
-    private fun getReviewContentForAlbum(userAlbum: UserAlbum): String {
-        return when (userAlbum.music.title) {
-            "BLACK PHONE 2" -> "this is just fucking ridiculous, every album I've heard has been an absolute masterpiece. he just refuses to make a bad album."
-            "WEAPONS" -> "Travis got a lot of anxiety in this one"
-            "HAPPY CLINIQUE 2" -> "he's flying"
-            "UTOPIA" -> "Amazing production and vibes throughout the entire album"
-            "DAMN" -> "Kendrick delivers another classic with deep lyrical content"
-            else -> "Great album with solid production and memorable tracks."
-        }
-    }
-
     private fun loadUserAlbums() {
-        val mockAlbums = getMockAlbums()
-        albumsAdapter.submitList(mockAlbums)
-    }
+        // Get actual reviews from ReviewManager
+        val userReviews = reviewManager.getReviews()
 
-    private fun getMockAlbums(): List<UserAlbum> {
-        return listOf(
+        // Convert reviews to UserAlbum objects
+        val userAlbums = userReviews.map { review ->
             UserAlbum(
                 music = Music(
-                    id = "1",
-                    title = "BLACK PHONE 2",
-                    artist = "HIM",
-                    album = "BLACK PHONE 2",
-                    releaseYear = 2024,
-                    genre = "Rock",
-                    coverImage = "black_phone_2",
-                    averageRating = 3.5,
+                    id = review.musicId,
+                    title = review.musicTitle,
+                    artist = "", // You might want to store artist in review
+                    album = review.musicTitle,
+                    releaseYear = review.musicYear.toIntOrNull() ?: 0,
+                    genre = "",
+                    coverImage = review.musicCoverUrl ?: "",
+                    averageRating = review.rating.toDouble(),
                     reviewCount = 1
                 ),
-                userRating = 3,
-                hasReview = true,
-                isLiked = false
-            ),
-            UserAlbum(
-                music = Music(
-                    id = "2",
-                    title = "WEAPONS",
-                    artist = "WEMPONS",
-                    album = "WEAPONS",
-                    releaseYear = 2024,
-                    genre = "Electronic",
-                    coverImage = "weapons_album",
-                    averageRating = 3.5,
-                    reviewCount = 1
-                ),
-                userRating = 3,
-                hasReview = true,
-                isLiked = true
-            ),
-            UserAlbum(
-                music = Music(
-                    id = "3",
-                    title = "HAPPY CLINIQUE 2",
-                    artist = "Various Artists",
-                    album = "HAPPY CLINIQUE 2",
-                    releaseYear = 2024,
-                    genre = "Pop",
-                    coverImage = "happy_clinique_2",
-                    averageRating = 4.0,
-                    reviewCount = 1
-                ),
-                userRating = 4,
-                hasReview = false,
-                isLiked = false
-            ),
-            UserAlbum(
-                music = Music(
-                    id = "4",
-                    title = "UTOPIA",
-                    artist = "Travis Scott",
-                    album = "UTOPIA",
-                    releaseYear = 2023,
-                    genre = "Hip-Hop",
-                    coverImage = "utopia_travis",
-                    averageRating = 5.0,
-                    reviewCount = 1
-                ),
-                userRating = 5,
-                hasReview = true,
-                isLiked = true
-            ),
-            UserAlbum(
-                music = Music(
-                    id = "5",
-                    title = "DAMN",
-                    artist = "Kendrick Lamar",
-                    album = "DAMN",
-                    releaseYear = 2017,
-                    genre = "Hip-Hop",
-                    coverImage = "damn_kendrick",
-                    averageRating = 4.0,
-                    reviewCount = 1
-                ),
-                userRating = 4,
-                hasReview = false,
-                isLiked = false
+                userRating = review.rating,
+                hasReview = review.content.isNotEmpty(),
+                isLiked = review.liked,
+                reviewId = review.id,
+                reviewContent = review.content,
+                timestamp = review.timestamp
             )
-        )
+        }
+
+        albumsAdapter.submitList(userAlbums)
     }
 
+    // Update UserAlbum data class to include review info
     data class UserAlbum(
         val music: Music,
         val userRating: Int,
         val hasReview: Boolean,
-        val isLiked: Boolean
+        val isLiked: Boolean,
+        val reviewId: String,
+        val reviewContent: String,
+        val timestamp: String
     )
 
     class UserAlbumsAdapter : RecyclerView.Adapter<UserAlbumsAdapter.AlbumViewHolder>() {

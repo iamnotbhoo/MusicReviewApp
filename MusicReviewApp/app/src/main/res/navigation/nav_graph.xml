@@ -130,6 +130,10 @@
         android:id="@+id/action_profileFragment_to_favoriteAlbumsFragment"
         app:destination="@id/favoriteAlbumsFragment" />
 
+    <action
+        android:id="@+id/action_profileFragment_to_albumDetailFragment"
+        app:destination="@id/albumDetailFragment" />
+
     <fragment
         android:id="@+id/reviewsPageFragment"
         android:name="student.projects.musicreviewapp.ui.home.ReviewsPageFragment"
@@ -147,7 +151,6 @@
             android:name="album"
             app:argType="student.projects.musicreviewapp.models.Music" />
 
-        <!-- ADD THIS ACTION -->
         <action
             android:id="@+id/action_albumDetailFragment_to_reviewFragment"
             app:destination="@id/reviewFragment" />
@@ -297,5 +300,29 @@
     <action
         android:id="@+id/action_reviewFragment_to_albumDetailFragment"
         app:destination="@id/albumDetailFragment" />
+
+    <!-- Lists Navigation -->
+
+        <action
+            android:id="@+id/action_userListsFragment_to_createListFragment"
+            app:destination="@id/createListFragment" />
+        <action
+            android:id="@+id/action_userListsFragment_to_listDetailFragment"
+            app:destination="@id/listDetailFragment" />
+
+    <fragment
+        android:id="@+id/createListFragment"
+        android:name="student.projects.musicreviewapp.ui.home.CreateListFragment"
+        android:label="Create List">
+        <action
+            android:id="@+id/action_createListFragment_to_addEntriesFragment"
+            app:destination="@id/addEntriesFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/addEntriesFragment"
+        android:name="student.projects.musicreviewapp.ui.home.AddEntriesFragment"
+        android:label="Add Albums" />
+
 
 </navigation>

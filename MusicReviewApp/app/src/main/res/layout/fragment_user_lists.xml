@@ -4,57 +4,112 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#9B8FAA">
+    android:background="#FFFFFF">
 
     <!-- Header -->
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
+        android:background="#FFFFFF"
         android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:background="#9B8FAA">
+        android:paddingEnd="16dp">
 
+        <!-- Back Button -->
         <ImageView
             android:id="@+id/back_button"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_centerVertical="true"
             android:src="@drawable/ic_arrow_back"
-            android:padding="8dp"
-            app:tint="@android:color/white"
-            android:contentDescription="Back" />
+            android:contentDescription="@string/back"
+            app:tint="#000000" />
 
+        <!-- Title -->
         <TextView
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="iamnotbhoo Lists"
-            android:textColor="@android:color/white"
+            android:layout_centerInParent="true"
+            android:text="My Lists"
+            android:textColor="#000000"
             android:textSize="18sp"
-            android:textStyle="bold"
-            android:gravity="center"
-            android:layout_marginStart="8dp" />
+            android:textStyle="bold" />
+
+        <!-- Add List Button -->
+        <ImageView
+            android:id="@+id/add_list_button"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:src="@drawable/ic_add"
+            android:contentDescription="@string/add"
+            app:tint="#000000" />
+
+    </RelativeLayout>
+
+    <!-- Search Bar -->
+    <EditText
+        android:id="@+id/search_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Search lists..."
+        android:textColor="#000000"
+        android:textSize="16sp"
+        android:background="@android:color/transparent"
+        android:padding="16dp"
+        android:drawableStart="@drawable/ic_search"
+        android:drawablePadding="8dp" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#E0E0E0" />
+
+    <!-- Empty State -->
+    <LinearLayout
+        android:id="@+id/empty_state"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="48dp"
+        android:visibility="visible">
 
         <ImageView
-            android:id="@+id/plus_button"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@drawable/ic_add"
-            android:padding="8dp"
-            app:tint="@android:color/white"
-            android:contentDescription="Create List" />
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:src="@drawable/ic_playlist_add"
+            android:contentDescription="@string/empty_lists"
+            app:tint="#808080" />
+
+        <TextView
+            android:id="@+id/empty_state_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No lists yet"
+            android:textColor="#808080"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp" />
+
+        <TextView
+            android:id="@+id/empty_state_subtext"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Create your first list to organize your favorite albums"
+            android:textColor="#808080"
+            android:textSize="14sp"
+            android:textAlignment="center"
+            android:layout_marginTop="8dp" />
 
     </LinearLayout>
 
-    <!-- Lists -->
+    <!-- Lists RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/lists_recycler"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:background="@android:color/white"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp" />
+        android:layout_height="match_parent"
+        android:padding="16dp"
+        android:visibility="gone" />
 
 </LinearLayout>

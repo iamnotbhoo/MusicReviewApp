@@ -54,6 +54,9 @@ class ReviewDetailFragment : Fragment() {
             userPhoto.setImageResource(R.drawable.placeholder_profile)
         }
 
+        val listenStatus = if (review.isFirstListen) "First Listen" else "Listened before"
+        view.findViewById<TextView>(R.id.review_date).text = "$listenStatus • ${review.timestamp}"
+
         // Set album info
         view.findViewById<TextView>(R.id.album_title).text = review.musicTitle
         view.findViewById<TextView>(R.id.album_year).text = review.musicYear

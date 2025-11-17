@@ -21,6 +21,7 @@ import student.projects.musicreviewapp.R
 import student.projects.musicreviewapp.models.Music
 import student.projects.musicreviewapp.models.Review
 import student.projects.musicreviewapp.auth.ReviewManager
+import student.projects.musicreviewapp.auth.AuthManager
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -28,6 +29,8 @@ import java.util.Locale
 class ReviewFragment : Fragment() {
 
     private lateinit var album: Music
+    private lateinit var reviewManager: ReviewManager
+    private lateinit var authManager: AuthManager
 
     private var selectedRating = 0
     private var isLiked = false
@@ -38,6 +41,8 @@ class ReviewFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        reviewManager = ReviewManager(requireContext())
+        authManager = AuthManager(requireContext())
         return inflater.inflate(R.layout.fragment_review, container, false)
     }
 
@@ -217,12 +222,15 @@ class ReviewFragment : Fragment() {
             return
         }
 
+        // Get current user info - FIXED: Use actual auth manager
+        val currentUserId = authManager.getCurrentUser() ?: "default_user"
+        val currentUserName = "iamnotbhoo" // You might want to get this from auth manager too
+
         // Create review object
-        val reviewManager = ReviewManager(requireContext())
         val review = Review(
             id = reviewManager.generateReviewId(),
-            userId = "1", // Current user ID - you can get this from your auth manager
-            userName = "iamnotbhoo", // Current username
+            userId = currentUserId, // Use actual current user ID
+            userName = currentUserName,
             userPhotoUrl = null,
             content = reviewContent,
             timestamp = reviewManager.getCurrentTimestamp(),

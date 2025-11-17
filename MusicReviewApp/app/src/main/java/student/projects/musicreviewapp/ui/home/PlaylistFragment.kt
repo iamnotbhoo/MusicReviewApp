@@ -12,11 +12,13 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import student.projects.musicreviewapp.R
+import student.projects.musicreviewapp.auth.PlaylistManager
 import student.projects.musicreviewapp.models.Music
 
 class PlaylistFragment : Fragment() {
 
     private lateinit var playlistAdapter: PlaylistAdapter
+    private lateinit var playlistManager: PlaylistManager
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -28,6 +30,7 @@ class PlaylistFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        playlistManager = PlaylistManager(requireContext())
         setupViews(view)
         loadPlaylistAlbums()
     }
@@ -38,7 +41,7 @@ class PlaylistFragment : Fragment() {
             findNavController().popBackStack()
         }
 
-        // Setup RecyclerView with grid layout
+        // Setup RecyclerView with grid layout (4 columns)
         val playlistRecycler = view.findViewById<RecyclerView>(R.id.playlist_recycler)
         playlistAdapter = PlaylistAdapter()
 
@@ -48,7 +51,7 @@ class PlaylistFragment : Fragment() {
         }
 
         playlistRecycler.apply {
-            layoutManager = GridLayoutManager(requireContext(), 3) // 3 columns grid
+            layoutManager = GridLayoutManager(requireContext(), 4) // 4 columns grid
             adapter = playlistAdapter
         }
     }
@@ -61,120 +64,30 @@ class PlaylistFragment : Fragment() {
     }
 
     private fun loadPlaylistAlbums() {
-        val mockPlaylistAlbums = getMockPlaylistAlbums()
-        playlistAdapter.submitList(mockPlaylistAlbums)
+        val playlistAlbums = playlistManager.getPlaylist()
+        playlistAdapter.submitList(playlistAlbums)
 
         // Update album count
-        view?.findViewById<TextView>(R.id.album_count)?.text = "${mockPlaylistAlbums.size} albums"
+        view?.findViewById<TextView>(R.id.album_count)?.text = "${playlistAlbums.size} albums"
+
+        // Show empty state if no albums
+        if (playlistAlbums.isEmpty()) {
+            view?.findViewById<TextView>(R.id.empty_state_text)?.visibility = View.VISIBLE
+            view?.findViewById<RecyclerView>(R.id.playlist_recycler)?.visibility = View.GONE
+        } else {
+            view?.findViewById<TextView>(R.id.empty_state_text)?.visibility = View.GONE
+            view?.findViewById<RecyclerView>(R.id.playlist_recycler)?.visibility = View.VISIBLE
+        }
     }
 
-    private fun getMockPlaylistAlbums(): List<Music> {
-        return listOf(
-            Music(
-                id = "1",
-                title = "Rodeo",
-                artist = "Travis Scott",
-                album = "Rodeo",
-                releaseYear = 2015,
-                genre = "Hip-Hop",
-                coverImage = "rodeo_travis",
-                averageRating = 4.5,
-                reviewCount = 120
-            ),
-            Music(
-                id = "2",
-                title = "DAMN",
-                artist = "Kendrick Lamar",
-                album = "DAMN",
-                releaseYear = 2017,
-                genre = "Hip-Hop",
-                coverImage = "damn_kendrick",
-                averageRating = 4.8,
-                reviewCount = 200
-            ),
-            Music(
-                id = "3",
-                title = "A Day At The Races",
-                artist = "Queen",
-                album = "A Day At The Races",
-                releaseYear = 1976,
-                genre = "Rock",
-                coverImage = "dayattheraces_queen",
-                averageRating = 4.6,
-                reviewCount = 150
-            ),
-            Music(
-                id = "4",
-                title = "Guard Dog",
-                artist = "Searows",
-                album = "Guard Dog",
-                releaseYear = 2022,
-                genre = "Indie Folk",
-                coverImage = "guarddog_searows",
-                averageRating = 4.2,
-                reviewCount = 80
-            ),
-            Music(
-                id = "5",
-                title = "The Blueprint",
-                artist = "Jay Z",
-                album = "The Blueprint",
-                releaseYear = 2001,
-                genre = "Hip-Hop",
-                coverImage = "blueprint_jay",
-                averageRating = 4.7,
-                reviewCount = 180
-            ),
-            Music(
-                id = "6",
-                title = "UTOPIA",
-                artist = "Travis Scott",
-                album = "UTOPIA",
-                releaseYear = 2023,
-                genre = "Hip-Hop",
-                coverImage = "utopia_travis",
-                averageRating = 4.4,
-                reviewCount = 160
-            ),
-            Music(
-                id = "7",
-                title = "Blonde",
-                artist = "Frank Ocean",
-                album = "Blonde",
-                releaseYear = 2016,
-                genre = "R&B",
-                coverImage = "",
-                averageRating = 4.9,
-                reviewCount = 220
-            ),
-            Music(
-                id = "8",
-                title = "After Hours",
-                artist = "The Weeknd",
-                album = "After Hours",
-                releaseYear = 2020,
-                genre = "R&B",
-                coverImage = "",
-                averageRating = 4.5,
-                reviewCount = 190
-            ),
-            Music(
-                id = "9",
-                title = "Folklore",
-                artist = "Taylor Swift",
-                album = "Folklore",
-                releaseYear = 2020,
-                genre = "Pop",
-                coverImage = "",
-                averageRating = 4.6,
-                reviewCount = 210
-            )
-        )
+    override fun onResume() {
+        super.onResume()
+        // Refresh playlist when returning to this fragment
+        loadPlaylistAlbums()
     }
 
     class PlaylistAdapter : RecyclerView.Adapter<PlaylistAdapter.AlbumViewHolder>() {
         private var albums = listOf<Music>()
-
         var onAlbumClick: ((Music) -> Unit)? = null
 
         class AlbumViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -183,33 +96,21 @@ class PlaylistFragment : Fragment() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AlbumViewHolder {
             val view = LayoutInflater.from(parent.context)
-                .inflate(R.layout.item_playlist_album, parent, false)
+                .inflate(R.layout.item_album_grid, parent, false)
             return AlbumViewHolder(view)
         }
 
         override fun onBindViewHolder(holder: AlbumViewHolder, position: Int) {
             val music = albums[position]
 
-            // Load album cover
+            // Load album cover from Spotify URL
             if (!music.coverImage.isNullOrEmpty()) {
-                try {
-                    val resourceId = holder.itemView.context.resources.getIdentifier(
-                        music.coverImage,
-                        "drawable",
-                        holder.itemView.context.packageName
-                    )
-                    if (resourceId != 0) {
-                        Glide.with(holder.itemView.context)
-                            .load(resourceId)
-                            .placeholder(R.drawable.album_placeholder)
-                            .error(R.drawable.album_placeholder)
-                            .into(holder.albumCover)
-                    } else {
-                        holder.albumCover.setImageResource(R.drawable.album_placeholder)
-                    }
-                } catch (e: Exception) {
-                    holder.albumCover.setImageResource(R.drawable.album_placeholder)
-                }
+                Glide.with(holder.itemView.context)
+                    .load(music.coverImage)
+                    .placeholder(R.drawable.album_placeholder)
+                    .error(R.drawable.album_placeholder)
+                    .centerCrop()
+                    .into(holder.albumCover)
             } else {
                 holder.albumCover.setImageResource(R.drawable.album_placeholder)
             }

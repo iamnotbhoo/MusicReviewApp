@@ -9,9 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.ImageView
-import android.widget.ProgressBar
 import android.widget.TextView
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -20,24 +18,34 @@ import com.bumptech.glide.Glide
 import student.projects.musicreviewapp.R
 import student.projects.musicreviewapp.models.Music
 import student.projects.musicreviewapp.network.SpotifyApiService
+import student.projects.musicreviewapp.models.AlbumDetails
+import android.widget.ProgressBar
+import android.widget.Toast
 
-class SearchFragment : Fragment() {
+class AddEntriesFragment : Fragment() {
 
-    private lateinit var spotifyApiService: SpotifyApiService
-    private lateinit var searchResultsRecyclerView: RecyclerView
     private lateinit var searchAdapter: SearchAdapter
-    private lateinit var loadingIndicator: ProgressBar
-    private lateinit var emptyStateText: TextView
-    private lateinit var searchPromptText: TextView
-    private lateinit var recentSearchesText: TextView
+    private lateinit var spotifyApiService: SpotifyApiService
     private lateinit var searchInput: EditText
+    private lateinit var searchRecycler: RecyclerView
+    private lateinit var loadingIndicator: ProgressBar
+    private lateinit var recentSearchesText: TextView
+
+    // Store the list ID if you need to know which list we're adding to
+    private var currentListId: String? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         spotifyApiService = SpotifyApiService(requireContext())
-        return inflater.inflate(R.layout.fragment_search_wrapper, container, false)
+
+        // Get list ID from arguments if passed
+        arguments?.let { bundle ->
+            currentListId = bundle.getString("listId")
+        }
+
+        return inflater.inflate(R.layout.fragment_add_entries, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -48,38 +56,44 @@ class SearchFragment : Fragment() {
     }
 
     private fun setupViews(view: View) {
+        // Back button
+        view.findViewById<ImageView>(R.id.back_button).setOnClickListener {
+            findNavController().popBackStack()
+        }
+
+        // Cancel button
+        view.findViewById<TextView>(R.id.cancel_button).setOnClickListener {
+            findNavController().popBackStack()
+        }
+
         // Initialize views
         searchInput = view.findViewById(R.id.search_input)
-        searchResultsRecyclerView = view.findViewById(R.id.search_results_recycler_view)
+        searchRecycler = view.findViewById(R.id.search_recycler)
         loadingIndicator = view.findViewById(R.id.loading_indicator)
-        emptyStateText = view.findViewById(R.id.empty_state_text)
-        searchPromptText = view.findViewById(R.id.search_prompt_text)
         recentSearchesText = view.findViewById(R.id.recent_searches_text)
 
-        // Setup RecyclerView
-        searchResultsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
-        searchAdapter = SearchAdapter { music ->
-            navigateToAlbumDetail(music)
+        // Setup RecyclerView for search results
+        searchRecycler.layoutManager = LinearLayoutManager(requireContext())
+        searchAdapter = SearchAdapter { album ->
+            // Add album to list and go back
+            addAlbumToList(album)
         }
-        searchResultsRecyclerView.adapter = searchAdapter
+        searchRecycler.adapter = searchAdapter
 
         // Hide loading initially
-        loadingIndicator.isVisible = false
-        showSearchPrompt()
+        loadingIndicator.visibility = View.GONE
     }
 
     private fun setupSearch() {
         searchInput.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-            override fun afterTextChanged(s: android.text.Editable?) {
+            override fun afterTextChanged(s: Editable?) {
                 val query = s.toString()
                 if (query.length >= 2) { // Start searching after 2 characters
                     performSearch(query)
                 } else if (query.isEmpty()) {
                     showRecentSearches()
-                } else {
-                    showSearchPrompt()
                 }
             }
         })
@@ -93,84 +107,49 @@ class SearchFragment : Fragment() {
         // You can implement recent searches storage
         val recentSearches = emptyList<Music>()
         searchAdapter.submitList(recentSearches)
-        recentSearchesText.isVisible = true
-        searchResultsRecyclerView.isVisible = false
-        emptyStateText.isVisible = false
-        searchPromptText.isVisible = false
-        loadingIndicator.isVisible = false
+        recentSearchesText.visibility = View.VISIBLE
+        searchRecycler.visibility = View.GONE
     }
 
     private fun performSearch(query: String) {
         showLoading()
-        recentSearchesText.isVisible = false
-        searchResultsRecyclerView.isVisible = true
+        recentSearchesText.visibility = View.GONE
+        searchRecycler.visibility = View.VISIBLE
 
+        // Use the existing searchMusic method instead of searchAlbums
         spotifyApiService.searchMusic(query, object : SpotifyApiService.SpotifyCallback<List<Music>> {
             override fun onSuccess(result: List<Music>) {
                 hideLoading()
                 searchAdapter.submitList(result)
-
-                // Debug logging
-                result.forEach { music ->
-                    Log.d("SearchDebug", "Result: ${music.title} by ${music.artist} - Cover: ${music.coverImage}")
-                }
-
-                if (result.isEmpty()) {
-                    showEmptyState("No results found for '$query'")
-                } else {
-                    showResults()
-                }
+                Log.d("SpotifySearch", "Search completed: ${result.size} results")
             }
 
             override fun onError(error: String) {
                 hideLoading()
-                showEmptyState("Search failed: $error")
+                Toast.makeText(requireContext(), "Search failed: $error", Toast.LENGTH_SHORT).show()
                 searchAdapter.submitList(emptyList())
-                Log.e("SearchFragment", "Search error: $error")
             }
         })
     }
 
+    private fun addAlbumToList(album: Music) {
+        // Here you would add the album to the current list
+        // You'll need to pass the list ID and handle this in your ListManager
+
+        Toast.makeText(requireContext(), "Added ${album.title} to list", Toast.LENGTH_SHORT).show()
+
+        // Navigate back to list detail or stay for more additions
+        findNavController().popBackStack()
+    }
+
     private fun showLoading() {
-        loadingIndicator.isVisible = true
-        searchResultsRecyclerView.isVisible = false
-        emptyStateText.isVisible = false
-        searchPromptText.isVisible = false
-        recentSearchesText.isVisible = false
+        loadingIndicator.visibility = View.VISIBLE
+        searchRecycler.visibility = View.GONE
     }
 
     private fun hideLoading() {
-        loadingIndicator.isVisible = false
-    }
-
-    private fun showResults() {
-        searchResultsRecyclerView.isVisible = true
-        emptyStateText.isVisible = false
-        searchPromptText.isVisible = false
-        recentSearchesText.isVisible = false
-    }
-
-    private fun showEmptyState(message: String) {
-        emptyStateText.text = message
-        emptyStateText.isVisible = true
-        searchResultsRecyclerView.isVisible = false
-        searchPromptText.isVisible = false
-        recentSearchesText.isVisible = false
-    }
-
-    private fun showSearchPrompt() {
-        searchPromptText.isVisible = true
-        searchResultsRecyclerView.isVisible = false
-        emptyStateText.isVisible = false
-        loadingIndicator.isVisible = false
-        recentSearchesText.isVisible = false
-    }
-
-    private fun navigateToAlbumDetail(music: Music) {
-        val bundle = Bundle().apply {
-            putParcelable("album", music)
-        }
-        findNavController().navigate(R.id.action_searchFragment_to_albumDetailFragment, bundle)
+        loadingIndicator.visibility = View.GONE
+        searchRecycler.visibility = View.VISIBLE
     }
 
     class SearchAdapter(private val onAlbumClick: (Music) -> Unit) :
@@ -183,6 +162,7 @@ class SearchFragment : Fragment() {
             val albumTitle: TextView = itemView.findViewById(R.id.album_title)
             val albumArtist: TextView = itemView.findViewById(R.id.album_artist)
             val albumYear: TextView = itemView.findViewById(R.id.album_year)
+            val addButton: ImageView = itemView.findViewById(R.id.add_button)
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SearchViewHolder {
@@ -210,7 +190,12 @@ class SearchFragment : Fragment() {
                 holder.albumCover.setImageResource(R.drawable.album_placeholder)
             }
 
-            // Whole item click
+            // Add button click
+            holder.addButton.setOnClickListener {
+                onAlbumClick(album)
+            }
+
+            // Whole item click (optional)
             holder.itemView.setOnClickListener {
                 onAlbumClick(album)
             }

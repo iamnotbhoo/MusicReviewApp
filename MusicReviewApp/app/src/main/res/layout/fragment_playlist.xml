@@ -4,77 +4,66 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#9B8FAA">
+    android:padding="16dp">
 
     <!-- Header -->
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:background="#9B8FAA">
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp">
 
         <ImageView
             android:id="@+id/back_button"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_centerVertical="true"
             android:src="@drawable/ic_arrow_back"
-            android:padding="8dp"
-            app:tint="@android:color/white"
-            android:contentDescription="Back" />
+            app:tint="@color/black" />
 
         <TextView
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="My Playlist"
-            android:textColor="@android:color/white"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:gravity="center"
-            android:layout_marginStart="8dp" />
+            android:layout_centerInParent="true"
+            android:text="Playlist"
+            android:textSize="20sp"
+            android:textStyle="bold" />
 
-        <View
-            android:layout_width="40dp"
-            android:layout_height="40dp" />
+    </RelativeLayout>
 
-    </LinearLayout>
-
-    <!-- Content -->
-    <LinearLayout
+    <!-- Playlist Info -->
+    <TextView
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:orientation="vertical"
-        android:background="@android:color/white"
-        android:paddingTop="16dp"
-        android:paddingBottom="16dp">
+        android:layout_height="wrap_content"
+        android:text="Your Playlist"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp" />
 
-        <!-- Album Count -->
-        <TextView
-            android:id="@+id/album_count"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="0 albums"
-            android:textColor="#757575"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            android:gravity="center"
-            android:layout_marginBottom="16dp"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp" />
+    <TextView
+        android:id="@+id/album_count"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="0 albums"
+        android:textSize="14sp"
+        android:textColor="@color/grey_600"
+        android:layout_marginBottom="24dp" />
 
-        <!-- Albums Grid -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/playlist_recycler"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp" />
+    <!-- Empty State -->
+    <TextView
+        android:id="@+id/empty_state_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Your playlist is empty\nAdd albums from album details"
+        android:textSize="16sp"
+        android:textColor="@color/grey_400"
+        android:gravity="center"
+        android:layout_marginTop="32dp"
+        android:visibility="gone" />
 
-    </LinearLayout>
+    <!-- Albums Grid -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/playlist_recycler"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
 </LinearLayout>

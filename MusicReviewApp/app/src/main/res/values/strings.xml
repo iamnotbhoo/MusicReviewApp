@@ -2,4 +2,11 @@
     <string name="app_name">MusicReviewApp</string>
     <string name="album_poster">Album poster</string>
     <string name="back">Back</string>
+    <string name="add">Add</string>
+    <string name="empty_lists">Empty lists</string>
+    <string name="completion">Completion percentage</string>
+    <string name="add_entries">Add entries</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="view_album">View album details</string>
 </resources>

@@ -12,6 +12,8 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
+import androidx.core.widget.ImageViewCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
@@ -22,15 +24,20 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import student.projects.musicreviewapp.R
 import student.projects.musicreviewapp.auth.AuthManager
 import student.projects.musicreviewapp.auth.FavoriteAlbumsManager
+import student.projects.musicreviewapp.auth.PlaylistManager
 import student.projects.musicreviewapp.auth.ReviewManager
 import student.projects.musicreviewapp.models.Music
+import student.projects.musicreviewapp.models.Review
 import student.projects.musicreviewapp.models.User
 
 class ProfileFragment : Fragment() {
     private lateinit var authManager: AuthManager
     private lateinit var favoriteAlbumsManager: FavoriteAlbumsManager
+    private lateinit var reviewManager: ReviewManager
+    private lateinit var playlistManager: PlaylistManager
+
     private val favoritesAdapter = AlbumGridAdapter()
-    private val recentActivityAdapter = AlbumGridAdapter()
+    private val recentActivityAdapter = RecentActivityAdapter()
 
     // User data that can be updated
     private var currentUsername = "iamnotbhoo"
@@ -59,8 +66,12 @@ class ProfileFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // Initialize all managers first
         authManager = AuthManager(requireContext())
         favoriteAlbumsManager = FavoriteAlbumsManager(requireContext())
+        reviewManager = ReviewManager(requireContext())
+        playlistManager = PlaylistManager(requireContext())
 
         setupViews(view)
         setupProfileStats(view)
@@ -82,6 +93,15 @@ class ProfileFragment : Fragment() {
             adapter = recentActivityAdapter
         }
 
+        // Set click listeners for adapters - UPDATED THIS PART
+        favoritesAdapter.onAlbumClick = { music ->
+            navigateToAlbumDetail(music)
+        }
+
+        recentActivityAdapter.onReviewClick = { review ->
+            navigateToReviewDetail(review)
+        }
+
         // Settings button
         view.findViewById<ImageView>(R.id.settings_button)?.setOnClickListener {
             showSettingsBottomSheet()
@@ -93,8 +113,25 @@ class ProfileFragment : Fragment() {
         }
 
         view.findViewById<TextView>(R.id.more_activity_button)?.setOnClickListener {
-            showToast("View all activity")
+            // Navigate to user reviews page to see all activity
+            findNavController().navigate(R.id.action_profileFragment_to_userReviewsFragment)
         }
+    }
+
+    // ADD THIS METHOD TO NAVIGATE TO ALBUM DETAILS
+    private fun navigateToAlbumDetail(music: Music) {
+        val bundle = Bundle().apply {
+            putParcelable("album", music)
+        }
+        findNavController().navigate(R.id.action_profileFragment_to_albumDetailFragment, bundle)
+    }
+
+    private fun navigateToReviewDetail(review: Review) {
+        val bundle = Bundle().apply {
+            putParcelable("review", review)
+        }
+        // Use the existing action from user reviews fragment
+        findNavController().navigate(R.id.action_userReviewsFragment_to_reviewDetailFragment, bundle)
     }
 
     private fun showSettingsBottomSheet() {
@@ -222,7 +259,7 @@ class ProfileFragment : Fragment() {
                     1 -> {
                         // Reset to default avatar
                         currentProfileImageUri = null
-                        view?.findViewById<ImageView>(R.id.profile_image)?.setImageResource(R.drawable.placeholder_profile)
+                        requireView().findViewById<ImageView>(R.id.profile_image)?.setImageResource(R.drawable.placeholder_profile)
                         showToast("Avatar removed")
                     }
                 }
@@ -236,7 +273,7 @@ class ProfileFragment : Fragment() {
     }
 
     private fun updateProfileImage(uri: Uri) {
-        view?.findViewById<ImageView>(R.id.profile_image)?.let { profileImage ->
+        requireView().findViewById<ImageView>(R.id.profile_image)?.let { profileImage ->
             Glide.with(this)
                 .load(uri)
                 .circleCrop()
@@ -265,7 +302,7 @@ class ProfileFragment : Fragment() {
     }
 
     private fun updateProfileUI() {
-        view?.let { v ->
+        requireView().let { v ->
             v.findViewById<TextView>(R.id.header_username)?.text = currentUsername
             v.findViewById<TextView>(R.id.user_bio)?.text = currentBio
             v.findViewById<TextView>(R.id.user_location)?.text = currentLocation
@@ -308,12 +345,19 @@ class ProfileFragment : Fragment() {
     }
 
     private fun updateProfileStats(view: View) {
-        // Set mock data - replace with real data from your database
-        view.findViewById<TextView>(R.id.albums_count)?.text = "238 / 97 this year"
-        view.findViewById<TextView>(R.id.diary_count)?.text = "110 / 110 this year"
-        view.findViewById<TextView>(R.id.reviews_count)?.text = "84"
-        view.findViewById<TextView>(R.id.lists_count)?.text = "2"
-        view.findViewById<TextView>(R.id.playlists_count)?.text = "324"
+        // Get real data from managers
+        val reviewCount = reviewManager.getReviews().size
+        val favoriteCount = favoriteAlbumsManager.getFavoriteAlbums().size
+        val playlistCount = playlistManager.getPlaylist().size
+        val listCount = 0 // No lists initially
+        val currentYear = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)
+
+        // Update with real data
+        view.findViewById<TextView>(R.id.albums_count)?.text = "$favoriteCount / $reviewCount this year"
+        view.findViewById<TextView>(R.id.diary_count)?.text = "$reviewCount / $reviewCount this year"
+        view.findViewById<TextView>(R.id.reviews_count)?.text = reviewCount.toString()
+        view.findViewById<TextView>(R.id.lists_count)?.text = listCount.toString() // Show 0 lists
+        view.findViewById<TextView>(R.id.playlists_count)?.text = playlistCount.toString()
         view.findViewById<TextView>(R.id.likes_count)?.text = "520"
     }
 
@@ -333,7 +377,7 @@ class ProfileFragment : Fragment() {
         val currentUser = getCurrentUser()
 
         // Update UI with user data
-        view?.let { v ->
+        requireView().let { v ->
             v.findViewById<TextView>(R.id.header_username)?.text = "iamnotbhoo"
             v.findViewById<TextView>(R.id.user_bio)?.text = "YuCk"
             v.findViewById<TextView>(R.id.user_badge)?.text = "PRO"
@@ -362,6 +406,9 @@ class ProfileFragment : Fragment() {
         // Load favorites and recent activity
         loadFavorites()
         loadRecentActivity()
+
+        // Update stats with real data
+        updateProfileStats(requireView())
     }
 
     private fun loadFavorites() {
@@ -377,23 +424,8 @@ class ProfileFragment : Fragment() {
     }
 
     private fun loadRecentActivity() {
-        val reviewManager = ReviewManager(requireContext())
-        val recentReviews = reviewManager.getRecentReviews(8)
-
-        // Convert reviews to Music objects for display
-        val recentActivityAlbums = recentReviews.map { review ->
-            Music(
-                id = review.musicId,
-                title = review.musicTitle,
-                artist = "", // You might want to store artist in review or fetch from album
-                album = review.musicTitle,
-                releaseYear = review.musicYear.toIntOrNull() ?: 0,
-                genre = "",
-                coverImage = review.musicCoverUrl ?: "",
-                averageRating = review.rating.toDouble(),
-                reviewCount = 1
-            )
-        }
+        val recentReviews = reviewManager.getRecentReviews(8) // Get 8 most recent reviews
+        recentActivityAdapter.submitList(recentReviews)
     }
 
     private fun getCurrentUser(): User {
@@ -407,46 +439,10 @@ class ProfileFragment : Fragment() {
         )
     }
 
-    private fun getMockAlbums(count: Int): List<Music> {
-        val localAlbumCovers = listOf(
-            "rodeo_travis",
-            "damn_kendrick",
-            "dayattheraces_queen",
-            "guarddog_searows",
-            "blueprint_jay",
-            "utopia_travis"
-        )
-
-        val albumTitles = listOf(
-            "Rodeo", "Damn", "A Day At The Races",
-            "Guard Dog", "The Blueprint", "Utopia"
-        )
-
-        val artists = listOf(
-            "Travis Scott", "Kendrick Lamar", "Queen",
-            "Searows", "Jay Z", "Travis Scott"
-        )
-
-        val currentYear = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)
-        return List(count) { index ->
-            Music(
-                id = "album_$index",
-                title = albumTitles[index % albumTitles.size],
-                artist = artists[index % artists.size],
-                album = albumTitles[index % albumTitles.size],
-                coverImage = localAlbumCovers[index % localAlbumCovers.size],
-                genre = listOf("Pop", "Rock", "Electronic", "Indie", "Hip-Hop")[index % 5],
-                releaseYear = currentYear - (index % 3),
-                averageRating = (3.5 + (index % 5) * 0.3).coerceAtMost(5.0),
-                reviewCount = (index + 1) * 10
-            )
-        }
-    }
-
-    // Use ONLY the original AlbumGridAdapter for both favorites and recent activity
+    // UPDATED AlbumGridAdapter - Changed to pass Music object instead of just ID
     class AlbumGridAdapter : RecyclerView.Adapter<AlbumGridAdapter.AlbumViewHolder>() {
         private var albums = listOf<Music>()
-        var onAlbumClick: ((String) -> Unit)? = null
+        var onAlbumClick: ((Music) -> Unit)? = null // Changed from (String) -> Unit to (Music) -> Unit
 
         class AlbumViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             val albumCover: ImageView = itemView.findViewById(R.id.album_cover)
@@ -497,7 +493,7 @@ class ProfileFragment : Fragment() {
             }
 
             holder.itemView.setOnClickListener {
-                onAlbumClick?.invoke(album.id)
+                onAlbumClick?.invoke(album) // Now passing the full Music object
             }
         }
 
@@ -505,6 +501,81 @@ class ProfileFragment : Fragment() {
 
         fun submitList(newAlbums: List<Music>) {
             albums = newAlbums
+            notifyDataSetChanged()
+        }
+    }
+
+    // RecentActivityAdapter (unchanged)
+    class RecentActivityAdapter : RecyclerView.Adapter<RecentActivityAdapter.RecentActivityViewHolder>() {
+        private var reviews = listOf<Review>()
+        var onReviewClick: ((Review) -> Unit)? = null
+
+        class RecentActivityViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+            val albumCover: ImageView = itemView.findViewById(R.id.album_cover)
+            val starViews = listOf(
+                itemView.findViewById<ImageView>(R.id.star1),
+                itemView.findViewById<ImageView>(R.id.star2),
+                itemView.findViewById<ImageView>(R.id.star3),
+                itemView.findViewById<ImageView>(R.id.star4),
+                itemView.findViewById<ImageView>(R.id.star5)
+            )
+            val reviewIcon: ImageView = itemView.findViewById(R.id.review_icon)
+            val listenedIcon: ImageView = itemView.findViewById(R.id.listened_icon)
+        }
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecentActivityViewHolder {
+            val view = LayoutInflater.from(parent.context)
+                .inflate(R.layout.item_recent_activity, parent, false)
+            return RecentActivityViewHolder(view)
+        }
+
+        override fun onBindViewHolder(holder: RecentActivityViewHolder, position: Int) {
+            val review = reviews[position]
+            val context = holder.itemView.context
+
+            // Load album cover
+            Glide.with(context)
+                .load(review.musicCoverUrl)
+                .placeholder(R.drawable.album_placeholder)
+                .error(R.drawable.album_placeholder)
+                .centerCrop()
+                .into(holder.albumCover)
+
+            // Set stars
+            val activeColor = ContextCompat.getColor(context, R.color.sign_in_button)
+            val inactiveColor = ContextCompat.getColor(context, R.color.gray_400)
+
+            holder.starViews.forEachIndexed { index, star ->
+                val color = if (index < review.rating) activeColor else inactiveColor
+                ImageViewCompat.setImageTintList(
+                    star,
+                    android.content.res.ColorStateList.valueOf(color)
+                )
+            }
+
+            // Show review icon if there's written content
+            holder.reviewIcon.visibility =
+                if (review.content.isNotEmpty()) View.VISIBLE else View.GONE
+
+            // Show listened icon if it's NOT the first listen (isFirstListen = false)
+            holder.listenedIcon.visibility =
+                if (!review.isFirstListen) View.VISIBLE else View.GONE
+
+            // Set listened icon color to match your theme
+            ImageViewCompat.setImageTintList(
+                holder.listenedIcon,
+                android.content.res.ColorStateList.valueOf(activeColor)
+            )
+
+            holder.itemView.setOnClickListener {
+                onReviewClick?.invoke(review)
+            }
+        }
+
+        override fun getItemCount(): Int = reviews.size
+
+        fun submitList(newReviews: List<Review>) {
+            reviews = newReviews
             notifyDataSetChanged()
         }
     }
