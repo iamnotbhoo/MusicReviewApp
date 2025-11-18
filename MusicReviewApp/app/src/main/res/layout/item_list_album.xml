@@ -31,7 +31,7 @@
             android:id="@+id/album_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Album Title"
+            android:text="@string/album_title"
             android:textSize="16sp"
             android:textStyle="bold"
             android:textColor="#000000" />
@@ -40,7 +40,7 @@
             android:id="@+id/artist_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Artist Name"
+            android:text="@string/artist_name"
             android:textSize="14sp"
             android:textColor="#666666" />
 

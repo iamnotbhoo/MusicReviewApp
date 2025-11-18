@@ -8,7 +8,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="MUSICREVIEWAPP LETS YOU..."
+        android:text="@string/musicreviewapp_lets_you"
         android:textSize="16sp"
         android:textColor="@color/grey_400"
         android:textStyle="bold"

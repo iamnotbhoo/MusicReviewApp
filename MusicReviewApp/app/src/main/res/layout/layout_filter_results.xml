@@ -9,7 +9,7 @@
         android:id="@+id/results_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Music results"
+        android:text="@string/music_results"
         android:textSize="18sp"
         android:textStyle="bold"
         android:textColor="@color/white"
@@ -19,7 +19,7 @@
         android:id="@+id/no_results_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="No results found, please try again."
+        android:text="@string/no_results_found_please_try_again"
         android:textSize="14sp"
         android:textColor="@color/grey_400"
         android:visibility="gone" />

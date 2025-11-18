@@ -1,10 +1,8 @@
 package student.projects.musicreviewapp.ui.home
 
 import android.app.AlertDialog
-import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,29 +14,30 @@ import androidx.core.content.ContextCompat
 import androidx.core.widget.ImageViewCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import student.projects.musicreviewapp.R
 import student.projects.musicreviewapp.auth.AuthManager
-import student.projects.musicreviewapp.auth.FavoriteAlbumsManager
-import student.projects.musicreviewapp.auth.LikeManager
-import student.projects.musicreviewapp.auth.ListManager
+import student.projects.musicreviewapp.auth.FirebaseFavoriteAlbumsManager
+import student.projects.musicreviewapp.auth.FirebaseLikeManager
+import student.projects.musicreviewapp.auth.FirebaseListManager
+import student.projects.musicreviewapp.auth.FirebaseReviewManager
 import student.projects.musicreviewapp.auth.PlaylistManager
-import student.projects.musicreviewapp.auth.ReviewManager
 import student.projects.musicreviewapp.models.Music
 import student.projects.musicreviewapp.models.Review
 import student.projects.musicreviewapp.models.User
+import student.projects.musicreviewapp.network.LanguageManager
 
 class ProfileFragment : Fragment() {
     private lateinit var authManager: AuthManager
-    private lateinit var favoriteAlbumsManager: FavoriteAlbumsManager
-    private lateinit var reviewManager: ReviewManager
+    private lateinit var firebaseFavoriteAlbumsManager: FirebaseFavoriteAlbumsManager
+    private lateinit var firebaseReviewManager: FirebaseReviewManager
+    private lateinit var firebaseListManager: FirebaseListManager
+    private lateinit var firebaseLikeManager: FirebaseLikeManager
     private lateinit var playlistManager: PlaylistManager
-
-    private lateinit var likeManager: LikeManager
+    private lateinit var languageManager: LanguageManager
 
     private val favoritesAdapter = AlbumGridAdapter()
     private val recentActivityAdapter = RecentActivityAdapter()
@@ -72,11 +71,13 @@ class ProfileFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // Initialize all managers first
-        authManager = AuthManager(requireContext())
-        favoriteAlbumsManager = FavoriteAlbumsManager(requireContext())
-        reviewManager = ReviewManager(requireContext())
+        authManager = AuthManager()
+        firebaseFavoriteAlbumsManager = FirebaseFavoriteAlbumsManager(requireContext())
+        firebaseReviewManager = FirebaseReviewManager(requireContext())
+        firebaseListManager = FirebaseListManager(requireContext())
+        firebaseLikeManager = FirebaseLikeManager(requireContext())
         playlistManager = PlaylistManager(requireContext())
-        likeManager = LikeManager(requireContext())
+        languageManager = LanguageManager(requireContext())
 
         setupViews(view)
         setupProfileStats(view)
@@ -98,7 +99,7 @@ class ProfileFragment : Fragment() {
             adapter = recentActivityAdapter
         }
 
-        // Set click listeners for adapters - UPDATED THIS PART
+        // Set click listeners for adapters
         favoritesAdapter.onAlbumClick = { music ->
             navigateToAlbumDetail(music)
         }
@@ -123,7 +124,6 @@ class ProfileFragment : Fragment() {
         }
     }
 
-    // ADD THIS METHOD TO NAVIGATE TO ALBUM DETAILS
     private fun navigateToAlbumDetail(music: Music) {
         val bundle = Bundle().apply {
             putParcelable("album", music)
@@ -135,7 +135,6 @@ class ProfileFragment : Fragment() {
         val bundle = Bundle().apply {
             putParcelable("review", review)
         }
-        // Use the existing action from user reviews fragment
         findNavController().navigate(R.id.action_userReviewsFragment_to_reviewDetailFragment, bundle)
     }
 
@@ -152,6 +151,7 @@ class ProfileFragment : Fragment() {
         view.findViewById<TextView>(R.id.current_bio)?.text = currentBio
         view.findViewById<TextView>(R.id.current_pronoun)?.text = currentPronoun
         view.findViewById<TextView>(R.id.current_url)?.text = currentUrl
+        view.findViewById<TextView>(R.id.current_language)?.text = languageManager.getCurrentLanguageDisplayName()
 
         // Close button
         view.findViewById<ImageView>(R.id.close_button)?.setOnClickListener {
@@ -205,6 +205,11 @@ class ProfileFragment : Fragment() {
             }
         }
 
+        // Language option
+        view.findViewById<View>(R.id.language_option)?.setOnClickListener {
+            showLanguageDialog()
+        }
+
         // Favorite Albums option
         view.findViewById<View>(R.id.favorite_albums_option)?.setOnClickListener {
             dialog.dismiss()
@@ -216,6 +221,27 @@ class ProfileFragment : Fragment() {
             dialog.dismiss()
             showChangeAvatarDialog()
         }
+    }
+
+    private fun showLanguageDialog() {
+        val languages = languageManager.getAvailableLanguages()
+        val languageNames = languages.map { it.nativeName }.toTypedArray()
+        val currentLanguage = languageManager.getCurrentLanguage()
+
+        val currentIndex = languages.indexOfFirst { it.code == currentLanguage }
+
+        AlertDialog.Builder(requireContext())
+            .setTitle(getString(R.string.select_language))
+            .setSingleChoiceItems(languageNames, currentIndex) { dialog, which ->
+                val selectedLanguage = languages[which]
+                languageManager.setLanguage(selectedLanguage.code)
+
+                // Immediately recreate the activity to apply language changes
+                activity?.recreate()
+                dialog.dismiss()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun showEditDialog(title: String, currentValue: String, onSave: (String) -> Unit) {
@@ -345,49 +371,38 @@ class ProfileFragment : Fragment() {
             findNavController().navigate(R.id.action_profileFragment_to_likesFragment)
         }
 
-        // Set initial stats
+        // Load stats with real data
         updateProfileStats(view)
     }
 
     private fun updateProfileStats(view: View) {
-        // Get real data from managers
-        val reviewManager = ReviewManager(requireContext())
-        val favoriteAlbumsManager = FavoriteAlbumsManager(requireContext())
-        val playlistManager = PlaylistManager(requireContext())
-        val listManager = ListManager(requireContext())
-        val likeManager = LikeManager(requireContext())
+        firebaseFavoriteAlbumsManager.getFavoriteAlbums { favoriteAlbums ->
+            firebaseReviewManager.getReviewCount { reviewCount ->
+                val playlist = playlistManager.getPlaylist()
+                firebaseListManager.getLists { lists ->
+                    firebaseLikeManager.getLikedAlbums { likedAlbumIds ->
+                        firebaseLikeManager.getLikedReviews { likedReviewIds ->
+                            firebaseLikeManager.getLikedLists { likedListIds ->
+                                val totalLikesCount = likedAlbumIds.size + likedReviewIds.size + likedListIds.size
 
-        val reviewCount = reviewManager.getReviews().size
-        val favoriteCount = favoriteAlbumsManager.getFavoriteAlbums().size
-        val playlistCount = playlistManager.getPlaylist().size
-        val actualListCount = listManager.getLists().size
-        val currentYear = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)
-
-        // Calculate actual likes count
-        val likedAlbumsCount = likeManager.getLikedAlbums().size
-        val likedReviewsCount = likeManager.getLikedReviews().size
-        val likedListsCount = likeManager.getLikedLists().size
-        val totalLikesCount = likedAlbumsCount + likedReviewsCount + likedListsCount
-
-        // Update with real data
-        view.findViewById<TextView>(R.id.albums_count)?.text = "$favoriteCount / $reviewCount this year"
-        view.findViewById<TextView>(R.id.diary_count)?.text = "$reviewCount / $reviewCount this year"
-        view.findViewById<TextView>(R.id.reviews_count)?.text = reviewCount.toString()
-        view.findViewById<TextView>(R.id.lists_count)?.text = actualListCount.toString()
-        view.findViewById<TextView>(R.id.playlists_count)?.text = playlistCount.toString()
-        view.findViewById<TextView>(R.id.likes_count)?.text = totalLikesCount.toString() //
+                                activity?.runOnUiThread {
+                                    view.findViewById<TextView>(R.id.albums_count)?.text = "${favoriteAlbums.size} / $reviewCount this year"
+                                    view.findViewById<TextView>(R.id.diary_count)?.text = "$reviewCount / $reviewCount this year"
+                                    view.findViewById<TextView>(R.id.reviews_count)?.text = reviewCount.toString()
+                                    view.findViewById<TextView>(R.id.lists_count)?.text = lists.size.toString()
+                                    view.findViewById<TextView>(R.id.playlists_count)?.text = playlist.size.toString()
+                                    view.findViewById<TextView>(R.id.likes_count)?.text = totalLikesCount.toString()
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private fun navigateToFavoriteAlbumsManager() {
         findNavController().navigate(R.id.action_profileFragment_to_favoriteAlbumsFragment)
-    }
-
-    private fun navigateToComingSoon(feature: String) {
-        android.app.AlertDialog.Builder(requireContext())
-            .setTitle("$feature Feature")
-            .setMessage("This feature is coming soon!")
-            .setPositiveButton("OK", null)
-            .show()
     }
 
     private fun loadProfileData() {
@@ -420,29 +435,44 @@ class ProfileFragment : Fragment() {
             }
         }
 
-        // Load favorites and recent activity
-        loadFavorites()
-        loadRecentActivity()
+        // Load favorites
+        firebaseFavoriteAlbumsManager.getFavoriteAlbums { favoriteAlbums ->
+            activity?.runOnUiThread {
+                favoritesAdapter.submitList(favoriteAlbums)
+            }
+        }
 
-        // Update stats with real data
+        // Load recent activity
+        firebaseReviewManager.getRecentReviews(8) { recentReviews ->
+            activity?.runOnUiThread {
+                recentActivityAdapter.submitList(recentReviews)
+            }
+        }
+
+        // Update stats once with all data
         updateProfileStats(requireView())
     }
 
     private fun loadFavorites() {
-        val favoriteAlbums = favoriteAlbumsManager.getFavoriteAlbums()
-
-        // If no favorites, show empty state (or you can show placeholders)
-        if (favoriteAlbums.isNotEmpty()) {
-            favoritesAdapter.submitList(favoriteAlbums)
-        } else {
-            // Show empty state - you can show placeholder albums if you want
-            favoritesAdapter.submitList(emptyList())
+        firebaseFavoriteAlbumsManager.getFavoriteAlbums { favoriteAlbums ->
+            activity?.runOnUiThread {
+                // If no favorites, show empty state (or you can show placeholders)
+                if (favoriteAlbums.isNotEmpty()) {
+                    favoritesAdapter.submitList(favoriteAlbums)
+                } else {
+                    // Show empty state - you can show placeholder albums if you want
+                    favoritesAdapter.submitList(emptyList())
+                }
+            }
         }
     }
 
     private fun loadRecentActivity() {
-        val recentReviews = reviewManager.getRecentReviews(8) // Get 8 most recent reviews
-        recentActivityAdapter.submitList(recentReviews)
+        firebaseReviewManager.getRecentReviews(8) { recentReviews ->
+            activity?.runOnUiThread {
+                recentActivityAdapter.submitList(recentReviews)
+            }
+        }
     }
 
     private fun getCurrentUser(): User {
@@ -456,10 +486,10 @@ class ProfileFragment : Fragment() {
         )
     }
 
-    // UPDATED AlbumGridAdapter - Changed to pass Music object instead of just ID
+    // AlbumGridAdapter
     class AlbumGridAdapter : RecyclerView.Adapter<AlbumGridAdapter.AlbumViewHolder>() {
         private var albums = listOf<Music>()
-        var onAlbumClick: ((Music) -> Unit)? = null // Changed from (String) -> Unit to (Music) -> Unit
+        var onAlbumClick: ((Music) -> Unit)? = null
 
         class AlbumViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             val albumCover: ImageView = itemView.findViewById(R.id.album_cover)
@@ -510,7 +540,7 @@ class ProfileFragment : Fragment() {
             }
 
             holder.itemView.setOnClickListener {
-                onAlbumClick?.invoke(album) // Now passing the full Music object
+                onAlbumClick?.invoke(album)
             }
         }
 
@@ -522,7 +552,7 @@ class ProfileFragment : Fragment() {
         }
     }
 
-    // RecentActivityAdapter (unchanged)
+    // RecentActivityAdapter
     class RecentActivityAdapter : RecyclerView.Adapter<RecentActivityAdapter.RecentActivityViewHolder>() {
         private var reviews = listOf<Review>()
         var onReviewClick: ((Review) -> Unit)? = null

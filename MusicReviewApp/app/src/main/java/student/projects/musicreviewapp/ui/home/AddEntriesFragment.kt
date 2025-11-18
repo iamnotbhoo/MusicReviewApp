@@ -66,7 +66,6 @@ class AddEntriesFragment : Fragment() {
             goBackToCreateList()
         }
 
-
         // Done button
         doneButton = view.findViewById<TextView>(R.id.done_button)
         doneButton.setOnClickListener {
@@ -184,8 +183,6 @@ class AddEntriesFragment : Fragment() {
         loadingIndicator.visibility = View.GONE
         searchRecycler.visibility = View.VISIBLE
     }
-
-    // REMOVED THE NESTED AddEntriesFragment CLASS - THIS WAS THE PROBLEM
 
     class SearchAdapter(
         private var selectedAlbums: List<Music>,

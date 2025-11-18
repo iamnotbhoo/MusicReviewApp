@@ -25,6 +25,6 @@
         android:layout_weight="1"
         android:textSize="12sp"
         android:textColor="@color/white"
-        android:text="Description will appear here" />
+        android:text="@string/description_will_appear_here" />
 
 </LinearLayout>

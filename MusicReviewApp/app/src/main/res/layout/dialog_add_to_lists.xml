@@ -10,7 +10,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Add to Lists"
+        android:text="@string/add_to_lists"
         android:textSize="18sp"
         android:textStyle="bold"
         android:gravity="center"
@@ -38,7 +38,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Create New List"
+            android:text="@string/create_new_list"
             android:textColor="#8B7D9E"
             android:textSize="16sp" />
 
@@ -54,7 +54,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Your Lists"
+        android:text="@string/your_lists"
         android:textSize="14sp"
         android:textColor="#666666"
         android:paddingBottom="8dp"/>
@@ -77,7 +77,7 @@
             android:id="@+id/cancel_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Cancel"
+            android:text="@string/cancel"
             android:textColor="#666666"
             android:textSize="16sp"
             android:padding="12dp"
@@ -89,7 +89,7 @@
             android:id="@+id/save_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Save"
+            android:text="@string/save"
             android:textColor="#8B7D9E"
             android:textSize="16sp"
             android:textStyle="bold"

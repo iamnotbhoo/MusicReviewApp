@@ -32,14 +32,14 @@ import student.projects.musicreviewapp.R
 import student.projects.musicreviewapp.models.AlbumDetails
 import student.projects.musicreviewapp.models.Music
 import student.projects.musicreviewapp.models.UserList
-import student.projects.musicreviewapp.auth.ListManager
-import student.projects.musicreviewapp.auth.PlaylistManager
-import student.projects.musicreviewapp.auth.ReviewManager
+import student.projects.musicreviewapp.auth.FirebaseListManager
+import student.projects.musicreviewapp.auth.FirebasePlaylistManager
+import student.projects.musicreviewapp.auth.FirebaseReviewManager
 import student.projects.musicreviewapp.auth.AuthManager
 import student.projects.musicreviewapp.models.Review
 import student.projects.musicreviewapp.network.SpotifyApiService
 import android.content.res.ColorStateList
-import student.projects.musicreviewapp.auth.LikeManager
+import student.projects.musicreviewapp.auth.FirebaseLikeManager
 import java.util.Calendar
 
 class AlbumDetailFragment : Fragment() {
@@ -49,23 +49,23 @@ class AlbumDetailFragment : Fragment() {
     private lateinit var loadingIndicator: ProgressBar
     private lateinit var contentContainer: LinearLayout
 
-    private lateinit var playlistManager: PlaylistManager
-    private lateinit var reviewManager: ReviewManager
+    private lateinit var playlistManager: FirebasePlaylistManager
+    private lateinit var reviewManager: FirebaseReviewManager
     private lateinit var authManager: AuthManager
-    private lateinit var listManager: ListManager
+    private lateinit var listManager: FirebaseListManager
 
-    private lateinit var likeManager: LikeManager
+    private lateinit var likeManager: FirebaseLikeManager
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         spotifyApiService = SpotifyApiService(requireContext())
-        playlistManager = PlaylistManager(requireContext())
-        reviewManager = ReviewManager(requireContext())
-        authManager = AuthManager(requireContext())
-        listManager = ListManager(requireContext())
-        likeManager = LikeManager(requireContext())
+        playlistManager = FirebasePlaylistManager(requireContext())
+        reviewManager = FirebaseReviewManager(requireContext())
+        authManager = AuthManager()
+        listManager = FirebaseListManager(requireContext())
+        likeManager = FirebaseLikeManager(requireContext())
         return inflater.inflate(R.layout.fragment_album_detail, container, false)
     }
 
@@ -120,30 +120,28 @@ class AlbumDetailFragment : Fragment() {
         val histogramContainer = view?.findViewById<LinearLayout>(R.id.histogram_container)
         val ratingText = view?.findViewById<TextView>(R.id.album_rating_text)
 
-        // Get all reviews for this album
-        val reviews = getReviewsForAlbum(album.id)
+        // Get all reviews for this album using Firebase manager
+        reviewManager.getReviewsByAlbum(album.id) { reviews ->
+            activity?.runOnUiThread {
+                Log.d("RatingsDebug", "Found ${reviews.size} reviews for album ${album.id}")
 
-        Log.d("RatingsDebug", "Found ${reviews.size} reviews for album ${album.id}")
+                if (reviews.isEmpty()) {
+                    // No ratings yet - show all bars at zero
+                    Log.d("RatingsDebug", "No reviews found, showing empty histogram")
+                    populateEmptyHistogram(histogramContainer)
+                    ratingText?.text = "0.0"
+                } else {
+                    // Calculate rating distribution
+                    val ratingDistribution = calculateRatingDistribution(reviews)
+                    Log.d("RatingsDebug", "Rating distribution: $ratingDistribution")
+                    populateHistogramWithData(histogramContainer, ratingDistribution)
 
-        if (reviews.isEmpty()) {
-            // No ratings yet - show all bars at zero
-            Log.d("RatingsDebug", "No reviews found, showing empty histogram")
-            populateEmptyHistogram(histogramContainer)
-            ratingText?.text = "0.0"
-        } else {
-            // Calculate rating distribution
-            val ratingDistribution = calculateRatingDistribution(reviews)
-            Log.d("RatingsDebug", "Rating distribution: $ratingDistribution")
-            populateHistogramWithData(histogramContainer, ratingDistribution)
-
-            // Calculate average rating
-            val averageRating = calculateAverageRating(reviews)
-            ratingText?.text = String.format("%.1f", averageRating)
+                    // Calculate average rating
+                    val averageRating = calculateAverageRating(reviews)
+                    ratingText?.text = String.format("%.1f", averageRating)
+                }
+            }
         }
-    }
-
-    private fun getReviewsForAlbum(albumId: String): List<Review> {
-        return reviewManager.getReviews().filter { it.musicId == albumId }
     }
 
     private fun calculateRatingDistribution(reviews: List<Review>): Map<Int, Int> {
@@ -217,50 +215,49 @@ class AlbumDetailFragment : Fragment() {
         val footerReviewText = view?.findViewById<TextView>(R.id.footer_review_text)
         val footerReviewStars = view?.findViewById<TextView>(R.id.footer_review_stars)
 
-        // Check if current user has reviewed this album
-        val userReview = getUserReviewForAlbum(album.id)
-
-        Log.d("RatingsDebug", "User review check: ${userReview != null}")
-        Log.d("RatingsDebug", "Current user ID: ${getCurrentUserId()}")
-
-        if (userReview != null) {
-            // User has reviewed - show footer
-            reviewFooter?.visibility = View.VISIBLE
-            Log.d("RatingsDebug", "Showing review footer with rating: ${userReview.rating}")
-
-            // Set album cover
-            if (album.coverImage.isNotEmpty()) {
-                Glide.with(requireContext())
-                    .load(album.coverImage)
-                    .placeholder(R.drawable.album_placeholder)
-                    .error(R.drawable.album_placeholder)
-                    .into(footerAlbumCover!!)
-            } else {
-                footerAlbumCover?.setImageResource(R.drawable.album_placeholder)
-            }
-
-            // Set review text
-            footerReviewText?.text = "You've reviewed this album"
-
-            // Set star rating
-            footerReviewStars?.text = "★".repeat(userReview.rating) + "☆".repeat(5 - userReview.rating)
-
-        } else {
-            // User hasn't reviewed - hide footer
-            reviewFooter?.visibility = View.GONE
-            Log.d("RatingsDebug", "Hiding review footer - no user review found")
-        }
-    }
-
-    private fun getUserReviewForAlbum(albumId: String): Review? {
         val currentUserId = getCurrentUserId()
-        return reviewManager.getReviews().find {
-            it.musicId == albumId && it.userId == currentUserId
+
+        // Check if current user has reviewed this album using Firebase manager
+        reviewManager.getReviewsByUser(currentUserId) { userReviews ->
+            activity?.runOnUiThread {
+                val userReview = userReviews.find { it.musicId == album.id }
+
+                Log.d("RatingsDebug", "User review check: ${userReview != null}")
+                Log.d("RatingsDebug", "Current user ID: $currentUserId")
+
+                if (userReview != null) {
+                    // User has reviewed - show footer
+                    reviewFooter?.visibility = View.VISIBLE
+                    Log.d("RatingsDebug", "Showing review footer with rating: ${userReview.rating}")
+
+                    // Set album cover
+                    if (album.coverImage.isNotEmpty()) {
+                        Glide.with(requireContext())
+                            .load(album.coverImage)
+                            .placeholder(R.drawable.album_placeholder)
+                            .error(R.drawable.album_placeholder)
+                            .into(footerAlbumCover!!)
+                    } else {
+                        footerAlbumCover?.setImageResource(R.drawable.album_placeholder)
+                    }
+
+                    // Set review text
+                    footerReviewText?.text = "You've reviewed this album"
+
+                    // Set star rating
+                    footerReviewStars?.text = "★".repeat(userReview.rating) + "☆".repeat(5 - userReview.rating)
+
+                } else {
+                    // User hasn't reviewed - hide footer
+                    reviewFooter?.visibility = View.GONE
+                    Log.d("RatingsDebug", "Hiding review footer - no user review found")
+                }
+            }
         }
     }
 
     private fun getCurrentUserId(): String {
-        return authManager.getCurrentUser() ?: "default_user"
+        return authManager.getCurrentUid() ?: "default_user"
     }
 
     override fun onResume() {
@@ -398,8 +395,6 @@ class AlbumDetailFragment : Fragment() {
             }
 
             albumDescription.text = description
-
-            // REMOVED: Don't set rating or histogram here - let setupRatingsSystem() handle it
         }
     }
 
@@ -460,8 +455,6 @@ class AlbumDetailFragment : Fragment() {
             albumGenre.isVisible = false
             genreHeading.isVisible = false
             listenNowButton.visibility = View.GONE
-
-            // REMOVED: Don't set rating or histogram here - let setupRatingsSystem() handle it
         }
     }
 
@@ -471,7 +464,6 @@ class AlbumDetailFragment : Fragment() {
             showAlbumMenuPopup()
         }
     }
-
 
     private fun showAlbumMenuPopup() {
         val dialog = Dialog(requireContext())
@@ -517,9 +509,12 @@ class AlbumDetailFragment : Fragment() {
             view.findViewById<ImageView>(R.id.star5)
         )
 
-        // Check if album is already liked
-        val isAlbumLiked = likeManager.isAlbumLiked(album.id)
-        updateLikeButton(likeIcon, likeText, isAlbumLiked)
+        // Check if album is already liked using Firebase manager
+        likeManager.isAlbumLiked(album.id) { isAlbumLiked ->
+            activity?.runOnUiThread {
+                updateLikeButton(likeIcon, likeText, isAlbumLiked)
+            }
+        }
 
         // LISTEN toggle
         listenBtn.setOnClickListener {
@@ -533,17 +528,26 @@ class AlbumDetailFragment : Fragment() {
             }
         }
 
-        // LIKE toggle - UPDATED TO USE LIKEMANAGER
+        // LIKE toggle - UPDATED TO USE FIREBASE LIKEMANAGER
         likeBtn.setOnClickListener {
-            val isLiked = likeManager.isAlbumLiked(album.id)
-            if (isLiked) {
-                likeManager.unlikeAlbum(album.id)
-                updateLikeButton(likeIcon, likeText, false)
-                showToast("Removed from liked albums")
-            } else {
-                likeManager.likeAlbum(album)
-                updateLikeButton(likeIcon, likeText, true)
-                showToast("Added to liked albums")
+            likeManager.isAlbumLiked(album.id) { isLiked ->
+                activity?.runOnUiThread {
+                    if (isLiked) {
+                        likeManager.unlikeAlbum(album.id) { success ->
+                            if (success) {
+                                updateLikeButton(likeIcon, likeText, false)
+                                showToast("Removed from liked albums")
+                            }
+                        }
+                    } else {
+                        likeManager.likeAlbum(album) { success ->
+                            if (success) {
+                                updateLikeButton(likeIcon, likeText, true)
+                                showToast("Added to liked albums")
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -605,41 +609,49 @@ class AlbumDetailFragment : Fragment() {
 
     // NEW: Setup Add to Lists dialog
     private fun setupAddToListsDialog(dialogView: View, dialog: AlertDialog) {
-        val lists = listManager.getLists()
-        val selectedLists = mutableSetOf<String>()
+        // Get lists using Firebase manager
+        listManager.getLists { lists ->
+            activity?.runOnUiThread {
+                val selectedLists = mutableSetOf<String>()
 
-        // Setup RecyclerView
-        val recyclerView = dialogView.findViewById<RecyclerView>(R.id.lists_recycler_view)
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        val adapter = ListsDialogAdapter(lists, selectedLists) { listId, isChecked ->
-            if (isChecked) {
-                selectedLists.add(listId)
-            } else {
-                selectedLists.remove(listId)
+                // Setup RecyclerView
+                val recyclerView = dialogView.findViewById<RecyclerView>(R.id.lists_recycler_view)
+                recyclerView.layoutManager = LinearLayoutManager(requireContext())
+                val adapter = ListsDialogAdapter(lists, selectedLists) { listId, isChecked ->
+                    if (isChecked) {
+                        selectedLists.add(listId)
+                    } else {
+                        selectedLists.remove(listId)
+                    }
+                }
+                recyclerView.adapter = adapter
+
+                // Create New List
+                dialogView.findViewById<View>(R.id.create_new_list).setOnClickListener {
+                    dialog.dismiss()
+                    navigateToCreateList()
+                }
+
+                // Cancel button
+                dialogView.findViewById<View>(R.id.cancel_button).setOnClickListener {
+                    dialog.dismiss()
+                }
+
+                // Save button
+                dialogView.findViewById<View>(R.id.save_button).setOnClickListener {
+                    selectedLists.forEach { listId ->
+                        listManager.addAlbumToList(listId, album) { success ->
+                            if (success) {
+                                showToast("Added to list")
+                            }
+                        }
+                    }
+                    if (selectedLists.isNotEmpty()) {
+                        showToast("Added to ${selectedLists.size} list${if (selectedLists.size > 1) "s" else ""}")
+                    }
+                    dialog.dismiss()
+                }
             }
-        }
-        recyclerView.adapter = adapter
-
-        // Create New List
-        dialogView.findViewById<View>(R.id.create_new_list).setOnClickListener {
-            dialog.dismiss()
-            navigateToCreateList()
-        }
-
-        // Cancel button
-        dialogView.findViewById<View>(R.id.cancel_button).setOnClickListener {
-            dialog.dismiss()
-        }
-
-        // Save button
-        dialogView.findViewById<View>(R.id.save_button).setOnClickListener {
-            selectedLists.forEach { listId ->
-                listManager.addAlbumToList(listId, album)
-            }
-            if (selectedLists.isNotEmpty()) {
-                showToast("Added to ${selectedLists.size} list${if (selectedLists.size > 1) "s" else ""}")
-            }
-            dialog.dismiss()
         }
     }
 
@@ -652,8 +664,13 @@ class AlbumDetailFragment : Fragment() {
     }
 
     private fun addToPlaylist() {
-        playlistManager.addToPlaylist(album)
-        showToast("Added to playlist")
+        playlistManager.addToPlaylist(album) { success ->
+            if (success) {
+                showToast("Added to playlist")
+            } else {
+                showToast("Failed to add to playlist")
+            }
+        }
     }
 
     private fun navigateToReviewPage() {
@@ -706,7 +723,7 @@ class AlbumDetailFragment : Fragment() {
     }
 }
 
-// Add this class to your AlbumDetailFragment file
+// Keep the ListsDialogAdapter class as it is (no changes needed)
 class ListsDialogAdapter(
     private val lists: List<UserList>,
     private val selectedLists: Set<String>,

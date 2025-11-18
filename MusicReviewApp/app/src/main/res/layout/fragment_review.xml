@@ -35,7 +35,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Cancel"
+                android:text="@string/cancel"
                 android:textColor="#000000"
                 android:textSize="16sp"
                 android:gravity="center"
@@ -54,7 +54,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="I Listened..."
+                android:text="@string/i_listened"
                 android:textColor="#000000"
                 android:textSize="20sp"
                 android:textStyle="bold"
@@ -65,7 +65,7 @@
                 android:id="@+id/album_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Album Title"
+                android:text="@string/album_title"
                 android:textColor="#000000"
                 android:textSize="18sp"
                 android:textStyle="bold"
@@ -98,7 +98,7 @@
                         android:id="@+id/review_date"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Saturday, 15 November 2025"
+                        android:text="@string/saturday_15_november_2025"
                         android:textColor="#666666"
                         android:textSize="14sp" />
 
@@ -110,7 +110,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Rate"
+                android:text="@string/rate"
                 android:textColor="#000000"
                 android:textSize="16sp"
                 android:textStyle="bold"
@@ -187,7 +187,7 @@
                     android:id="@+id/like_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Like"
+                    android:text="@string/like"
                     android:textColor="#000000"
                     android:textSize="16sp"
                     android:layout_marginStart="8dp" />
@@ -198,7 +198,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Add review..."
+                android:text="@string/add_review"
                 android:textColor="#000000"
                 android:textSize="16sp"
                 android:textStyle="bold"
@@ -221,7 +221,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Add tags..."
+                android:text="@string/add_tags"
                 android:textColor="#000000"
                 android:textSize="16sp"
                 android:textStyle="bold"
@@ -271,7 +271,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="First Listen"
+                    android:text="@string/first_listen"
                     android:textColor="#000000"
                     android:textSize="16sp" />
 
@@ -302,7 +302,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Anyone can reply"
+                    android:text="@string/anyone_can_reply"
                     android:textColor="#000000"
                     android:textSize="16sp" />
 
@@ -321,7 +321,7 @@
                 android:layout_height="48dp"
                 android:background="#9B59B6"
                 android:gravity="center"
-                android:text="Save"
+                android:text="@string/save"
                 android:textColor="#FFFFFF"
                 android:textSize="16sp"
                 android:textStyle="bold"

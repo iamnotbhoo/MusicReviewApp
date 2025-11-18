@@ -31,7 +31,7 @@
             android:id="@+id/username"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="iamnotbhoo"
+            android:text="@string/iamnotbhoo"
             android:textColor="#FFFFFF"
             android:textSize="18sp"
             android:textStyle="bold"
@@ -66,7 +66,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Popular"
+                android:text="@string/popular"
                 android:textColor="#FFFFFF"
                 android:textSize="16sp"
                 android:paddingStart="24dp" />
@@ -94,7 +94,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Playlist"
+                android:text="@string/playlist"
                 android:textColor="#FFFFFF"
                 android:textSize="16sp"
                 android:paddingStart="24dp" />
@@ -120,7 +120,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Lists"
+                android:text="@string/lists"
                 android:textColor="#FFFFFF"
                 android:textSize="16sp"
                 android:paddingStart="24dp" />
@@ -146,7 +146,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Diary"
+                android:text="@string/diary"
                 android:textColor="#FFFFFF"
                 android:textSize="16sp"
                 android:paddingStart="24dp" />
@@ -172,7 +172,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Reviews"
+                android:text="@string/reviews"
                 android:textColor="#FFFFFF"
                 android:textSize="16sp"
                 android:paddingStart="24dp" />
@@ -198,7 +198,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Activity"
+                android:text="@string/activity"
                 android:textColor="#FFFFFF"
                 android:textSize="16sp"
                 android:paddingStart="24dp" />
@@ -224,7 +224,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Sign out"
+                android:text="@string/sign_out"
                 android:textColor="#FFFFFF"
                 android:textSize="16sp"
                 android:paddingStart="24dp" />

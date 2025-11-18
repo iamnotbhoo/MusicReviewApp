@@ -27,7 +27,7 @@
             android:id="@+id/user_card_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Username"
+            android:text="@string/username"
             android:textSize="18sp"
             android:textColor="@color/white"
             android:textStyle="bold"
@@ -43,7 +43,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Favorites"
+                android:text="@string/favorites"
                 android:textSize="12sp"
                 android:textColor="@color/grey_400" />
 
@@ -68,7 +68,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Listened"
+                android:text="@string/listened"
                 android:textSize="12sp"
                 android:textColor="@color/grey_400"
                 android:layout_marginStart="8dp" />

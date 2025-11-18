@@ -11,25 +11,29 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.launch
 import student.projects.musicreviewapp.R
-import student.projects.musicreviewapp.auth.ListManager
 import student.projects.musicreviewapp.models.UserList
+import student.projects.musicreviewapp.repositories.FirebaseRepository
 
 class UserListsFragment : Fragment() {
 
-    private lateinit var listManager: ListManager
     private lateinit var listsAdapter: ListsAdapter
     private lateinit var searchInput: EditText
+    private val repository = FirebaseRepository()
+    private val auth = FirebaseAuth.getInstance()
+    private val currentUserId get() = auth.currentUser?.uid ?: ""
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        listManager = ListManager(requireContext())
         return inflater.inflate(R.layout.fragment_user_lists, container, false)
     }
 
@@ -80,24 +84,36 @@ class UserListsFragment : Fragment() {
     }
 
     private fun filterLists(query: String) {
-        val allLists = listManager.getLists()
-        if (query.isBlank()) {
-            listsAdapter.submitList(allLists)
-        } else {
-            val filteredLists = allLists.filter { list ->
-                list.name.contains(query, ignoreCase = true) ||
-                        list.description.contains(query, ignoreCase = true) ||
-                        list.tags.any { it.contains(query, ignoreCase = true) }
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val allLists = repository.getUserLists(currentUserId)
+                if (query.isBlank()) {
+                    listsAdapter.submitList(allLists)
+                } else {
+                    val filteredLists = allLists.filter { list ->
+                        list.name.contains(query, ignoreCase = true) ||
+                                list.description.contains(query, ignoreCase = true) ||
+                                list.tags.any { it.contains(query, ignoreCase = true) }
+                    }
+                    listsAdapter.submitList(filteredLists)
+                }
+                updateEmptyState()
+            } catch (e: Exception) {
+                showToast("Failed to filter lists")
             }
-            listsAdapter.submitList(filteredLists)
         }
-        updateEmptyState()
     }
 
     private fun loadLists() {
-        val lists = listManager.getLists()
-        listsAdapter.submitList(lists)
-        updateEmptyState()
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val lists = repository.getUserLists(currentUserId)
+                listsAdapter.submitList(lists)
+                updateEmptyState()
+            } catch (e: Exception) {
+                showToast("Failed to load lists")
+            }
+        }
     }
 
     private fun updateEmptyState() {
@@ -154,9 +170,15 @@ class UserListsFragment : Fragment() {
     }
 
     private fun deleteList(list: UserList) {
-        listManager.deleteList(list.id)
-        loadLists() // Refresh the list
-        android.widget.Toast.makeText(requireContext(), "List deleted", android.widget.Toast.LENGTH_SHORT).show()
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                repository.deleteList(list.id, currentUserId)
+                loadLists() // Refresh the list
+                showToast("List deleted")
+            } catch (e: Exception) {
+                showToast("Failed to delete list")
+            }
+        }
     }
 
     override fun onResume() {
@@ -230,5 +252,9 @@ class UserListsFragment : Fragment() {
             lists = newLists
             notifyDataSetChanged()
         }
+    }
+
+    private fun showToast(message: String) {
+        android.widget.Toast.makeText(requireContext(), message, android.widget.Toast.LENGTH_SHORT).show()
     }
 }

@@ -12,13 +12,13 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import student.projects.musicreviewapp.R
-import student.projects.musicreviewapp.auth.PlaylistManager
+import student.projects.musicreviewapp.auth.FirebaseDataManager
 import student.projects.musicreviewapp.models.Music
 
 class PlaylistFragment : Fragment() {
 
     private lateinit var playlistAdapter: PlaylistAdapter
-    private lateinit var playlistManager: PlaylistManager
+    private lateinit var dataManager: FirebaseDataManager
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -30,7 +30,7 @@ class PlaylistFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        playlistManager = PlaylistManager(requireContext())
+        dataManager = FirebaseDataManager(requireContext())
         setupViews(view)
         loadPlaylistAlbums()
     }
@@ -64,19 +64,22 @@ class PlaylistFragment : Fragment() {
     }
 
     private fun loadPlaylistAlbums() {
-        val playlistAlbums = playlistManager.getPlaylist()
-        playlistAdapter.submitList(playlistAlbums)
+        dataManager.getPlaylist { playlistAlbums ->
+            activity?.runOnUiThread {
+                playlistAdapter.submitList(playlistAlbums)
 
-        // Update album count
-        view?.findViewById<TextView>(R.id.album_count)?.text = "${playlistAlbums.size} albums"
+                // Update album count
+                view?.findViewById<TextView>(R.id.album_count)?.text = "${playlistAlbums.size} albums"
 
-        // Show empty state if no albums
-        if (playlistAlbums.isEmpty()) {
-            view?.findViewById<TextView>(R.id.empty_state_text)?.visibility = View.VISIBLE
-            view?.findViewById<RecyclerView>(R.id.playlist_recycler)?.visibility = View.GONE
-        } else {
-            view?.findViewById<TextView>(R.id.empty_state_text)?.visibility = View.GONE
-            view?.findViewById<RecyclerView>(R.id.playlist_recycler)?.visibility = View.VISIBLE
+                // Show empty state if no albums
+                if (playlistAlbums.isEmpty()) {
+                    view?.findViewById<TextView>(R.id.empty_state_text)?.visibility = View.VISIBLE
+                    view?.findViewById<RecyclerView>(R.id.playlist_recycler)?.visibility = View.GONE
+                } else {
+                    view?.findViewById<TextView>(R.id.empty_state_text)?.visibility = View.GONE
+                    view?.findViewById<RecyclerView>(R.id.playlist_recycler)?.visibility = View.VISIBLE
+                }
+            }
         }
     }
 

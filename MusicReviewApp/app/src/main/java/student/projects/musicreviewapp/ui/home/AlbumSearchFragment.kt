@@ -1,6 +1,7 @@
 package student.projects.musicreviewapp.ui.home
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,15 +13,17 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import student.projects.musicreviewapp.R
 import student.projects.musicreviewapp.adapters.MusicAdapter
-import student.projects.musicreviewapp.auth.FavoriteAlbumsManager
+import student.projects.musicreviewapp.auth.FirebaseDataManager
 import student.projects.musicreviewapp.models.Music
 import student.projects.musicreviewapp.network.SpotifyApiService
 
 class AlbumSearchFragment : Fragment() {
 
     private lateinit var spotifyApiService: SpotifyApiService
-    private lateinit var favoriteAlbumsManager: FavoriteAlbumsManager
+
     private lateinit var searchResultsAdapter: MusicAdapter
+
+    private lateinit var dataManager: FirebaseDataManager
     private var selectedPosition: Int = -1
 
     override fun onCreateView(
@@ -34,7 +37,7 @@ class AlbumSearchFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         spotifyApiService = SpotifyApiService(requireContext())
-        favoriteAlbumsManager = FavoriteAlbumsManager(requireContext())
+        dataManager = FirebaseDataManager(requireContext())
         selectedPosition = arguments?.getInt("position", -1) ?: -1
 
         setupViews(view)
@@ -83,35 +86,75 @@ class AlbumSearchFragment : Fragment() {
     }
 
     private fun performSearch(query: String) {
-        spotifyApiService.searchMusic(query, object : SpotifyApiService.SpotifyCallback<List<Music>> {
-            override fun onSuccess(result: List<Music>) {
-                searchResultsAdapter.updateData(result)
-            }
-            override fun onError(error: String) {
-                android.widget.Toast.makeText(requireContext(), "Search failed: $error", android.widget.Toast.LENGTH_SHORT).show()
-            }
-        })
+        spotifyApiService.searchMusic(
+            query,
+            object : SpotifyApiService.SpotifyCallback<List<Music>> {
+                override fun onSuccess(result: List<Music>) {
+                    searchResultsAdapter.updateData(result)
+                }
+
+                override fun onError(error: String) {
+                    android.widget.Toast.makeText(
+                        requireContext(),
+                        "Search failed: $error",
+                        android.widget.Toast.LENGTH_SHORT
+                    ).show()
+                }
+            })
     }
 
     private fun addAlbumToFavorites(music: Music) {
         try {
-            val currentFavorites = favoriteAlbumsManager.getFavoriteAlbums().toMutableList()
+            Log.d("AlbumSearch", "Adding album to favorites: ${music.title} by ${music.artist}")
 
-            // If we're replacing an existing position
-            if (selectedPosition != -1 && selectedPosition < currentFavorites.size) {
-                currentFavorites[selectedPosition] = music
-            } else {
-                // Adding to the end
-                currentFavorites.add(music)
+            // Use dataManager consistently
+            dataManager.getFavoriteAlbums { currentFavorites ->
+                val mutableFavorites = currentFavorites.toMutableList()
+
+                Log.d("AlbumSearch", "Current favorites count: ${currentFavorites.size}")
+                Log.d("AlbumSearch", "Selected position: $selectedPosition")
+
+                // Your existing logic for adding/replacing...
+                if (selectedPosition != -1 && selectedPosition < mutableFavorites.size) {
+                    Log.d("AlbumSearch", "Replacing album at position $selectedPosition")
+                    mutableFavorites[selectedPosition] = music
+                } else {
+                    if (mutableFavorites.size < 4) {
+                        mutableFavorites.add(music)
+                    } else {
+                        mutableFavorites[3] = music
+                    }
+                }
+
+                Log.d("AlbumSearch", "Updated favorites count: ${mutableFavorites.size}")
+
+                // Use dataManager consistently here too
+                dataManager.updateFavoriteAlbums(mutableFavorites) { success ->
+                    activity?.runOnUiThread {
+                        if (success) {
+                            android.widget.Toast.makeText(
+                                requireContext(),
+                                "Album added to favorites!",
+                                android.widget.Toast.LENGTH_SHORT
+                            ).show()
+                            findNavController().popBackStack()
+                        } else {
+                            android.widget.Toast.makeText(
+                                requireContext(),
+                                "Error adding album to favorites",
+                                android.widget.Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                }
             }
-
-            favoriteAlbumsManager.updateFavoriteAlbums(currentFavorites)
-            android.widget.Toast.makeText(requireContext(), "Album added to favorites!", android.widget.Toast.LENGTH_SHORT).show()
-
-            // Navigate back to FavoriteAlbumsFragment
-            findNavController().popBackStack(R.id.favoriteAlbumsFragment, false)
         } catch (e: Exception) {
-            android.widget.Toast.makeText(requireContext(), "Error: ${e.message}", android.widget.Toast.LENGTH_SHORT).show()
+            Log.e("AlbumSearch", "Error adding to favorites: ${e.message}", e)
+            android.widget.Toast.makeText(
+                requireContext(),
+                "Error: ${e.message}",
+                android.widget.Toast.LENGTH_SHORT
+            ).show()
         }
     }
 }

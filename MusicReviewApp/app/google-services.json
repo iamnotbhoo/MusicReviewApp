@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "502839598328",
+    "project_id": "musicreviewapp-8897c",
+    "storage_bucket": "musicreviewapp-8897c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:502839598328:android:2e8da4bd0a62c46f73ef0d",
+        "android_client_info": {
+          "package_name": "student.projects.musicreviewapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "502839598328-cft7f2rgtprrchdm493ilsu4h1439msa.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "student.projects.musicreviewapp",
+            "certificate_hash": "2d9e231809d1504349796a0b6407dca1d41df12d"
+          }
+        },
+        {
+          "client_id": "502839598328-lt7od3ekspqg5jdcvt9rpa08825llimp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAhgD1-R4_1jDvPBLbYex5u-rIubPheGiU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "502839598328-lt7od3ekspqg5jdcvt9rpa08825llimp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -20,16 +20,15 @@ import com.google.android.material.chip.ChipGroup
 import student.projects.musicreviewapp.R
 import student.projects.musicreviewapp.models.Music
 import student.projects.musicreviewapp.models.Review
-import student.projects.musicreviewapp.auth.ReviewManager
 import student.projects.musicreviewapp.auth.AuthManager
+import student.projects.musicreviewapp.auth.FirebaseReviewManager
 import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import java.util.*
 
 class ReviewFragment : Fragment() {
 
     private lateinit var album: Music
-    private lateinit var reviewManager: ReviewManager
+    private lateinit var reviewManager: FirebaseReviewManager
     private lateinit var authManager: AuthManager
 
     private var selectedRating = 0
@@ -41,8 +40,8 @@ class ReviewFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        reviewManager = ReviewManager(requireContext())
-        authManager = AuthManager(requireContext())
+        reviewManager = FirebaseReviewManager(requireContext())
+        authManager = AuthManager()
         return inflater.inflate(R.layout.fragment_review, container, false)
     }
 
@@ -116,6 +115,9 @@ class ReviewFragment : Fragment() {
                 updateStars(index + 1)
             }
         }
+
+        // Initialize with 0 stars
+        updateStars(0)
     }
 
     private fun setupLikeButton(view: View) {
@@ -131,13 +133,18 @@ class ReviewFragment : Fragment() {
             isLiked = !isLiked
             updateLikeButton(likeIcon, likeText)
         }
+
+        // Initialize like button state
+        updateLikeButton(likeIcon, likeText)
     }
 
     private fun updateLikeButton(likeIcon: ImageView, likeText: TextView) {
         if (isLiked) {
+            likeIcon.setImageResource(R.drawable.ic_heart_orange)
             ImageViewCompat.setImageTintList(likeIcon, android.content.res.ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.orange_500)))
             likeText.text = "Liked"
         } else {
+            likeIcon.setImageResource(R.drawable.ic_heart)
             ImageViewCompat.setImageTintList(likeIcon, android.content.res.ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.grey_400)))
             likeText.text = "Like"
         }
@@ -152,13 +159,25 @@ class ReviewFragment : Fragment() {
 
         firstListenLayout.setOnClickListener {
             isFirstListen = !isFirstListen
-            firstListenText.text = if (isFirstListen) "First Listen" else "Listened"
+            updateFirstListenOption(firstListenText)
         }
 
         repliesLayout.setOnClickListener {
             allowReplies = !allowReplies
-            repliesText.text = if (allowReplies) "Anyone can reply" else "No replies"
+            updateRepliesOption(repliesText)
         }
+
+        // Initialize options
+        updateFirstListenOption(firstListenText)
+        updateRepliesOption(repliesText)
+    }
+
+    private fun updateFirstListenOption(firstListenText: TextView) {
+        firstListenText.text = if (isFirstListen) "First Listen" else "Listened Before"
+    }
+
+    private fun updateRepliesOption(repliesText: TextView) {
+        repliesText.text = if (allowReplies) "Anyone can reply" else "No replies"
     }
 
     private fun setupTagsInput(view: View) {
@@ -178,6 +197,9 @@ class ReviewFragment : Fragment() {
                 }
             }
         })
+
+        // Add hint text
+        tagsInput.hint = "Add tags (press comma or space to add)"
     }
 
     private fun addTagToChipGroup(tag: String, chipGroup: ChipGroup) {
@@ -187,6 +209,11 @@ class ReviewFragment : Fragment() {
             setOnCloseIconClickListener {
                 chipGroup.removeView(this)
             }
+            // Style the chip
+            chipBackgroundColor = android.content.res.ColorStateList.valueOf(
+                ContextCompat.getColor(requireContext(), R.color.purple_200)
+            )
+            setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
         }
         chipGroup.addView(chip)
     }
@@ -205,52 +232,94 @@ class ReviewFragment : Fragment() {
 
         saveButton.setOnClickListener {
             if (selectedRating == 0) {
-                android.widget.Toast.makeText(requireContext(), "Please select a rating", android.widget.Toast.LENGTH_SHORT).show()
+                showToast("Please select a rating")
+                return@setOnClickListener
+            }
+
+            val reviewContent = view.findViewById<EditText>(R.id.review_input)?.text?.toString() ?: ""
+            if (reviewContent.isBlank()) {
+                showToast("Please write a review")
                 return@setOnClickListener
             }
 
             saveReview()
         }
+
+        // Add text change listener to enable/disable save button
+        val reviewInput = view.findViewById<EditText>(R.id.review_input)
+        reviewInput?.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                val hasContent = s?.toString()?.isNotBlank() == true
+                val hasRating = selectedRating > 0
+                saveButton.isEnabled = hasContent && hasRating
+                saveButton.alpha = if (hasContent && hasRating) 1.0f else 0.5f
+            }
+        })
     }
 
     private fun saveReview() {
         val reviewContent = view?.findViewById<EditText>(R.id.review_input)?.text?.toString() ?: ""
         val tags = getTags(view?.findViewById(R.id.tags_chip_group) ?: return)
 
-        if (selectedRating == 0) {
-            android.widget.Toast.makeText(requireContext(), "Please select a rating", android.widget.Toast.LENGTH_SHORT).show()
+        val currentUserId = authManager.getCurrentUid() ?: run {
+            showToast("Not logged in")
             return
         }
 
-        // Get current user info - FIXED: Use actual auth manager
-        val currentUserId = authManager.getCurrentUser() ?: "default_user"
-        val currentUserName = "iamnotbhoo" // You might want to get this from auth manager too
+        val currentUsername = authManager.getCurrentUser() ?: "iamnotbhoo"
+
+        // Show loading state
+        view?.findViewById<TextView>(R.id.save_button)?.text = "Saving..."
 
         // Create review object
         val review = Review(
             id = reviewManager.generateReviewId(),
-            userId = currentUserId, // Use actual current user ID
-            userName = currentUserName,
+            userId = currentUserId,
+            userName = currentUsername,
             userPhotoUrl = null,
             content = reviewContent,
             timestamp = reviewManager.getCurrentTimestamp(),
             musicId = album.id,
             musicTitle = album.title,
+            musicArtist = album.artist,
             musicYear = album.releaseYear.toString(),
             musicCoverUrl = album.coverImage,
             rating = selectedRating,
             tags = tags,
             isFirstListen = isFirstListen,
             allowReplies = allowReplies,
-            liked = isLiked
+            liked = isLiked,
+            likes = 0
         )
 
-        // Save the review
-        reviewManager.saveReview(review)
+        // Save the review to Firebase
+        reviewManager.saveReview(review) { success ->
+            activity?.runOnUiThread {
+                if (success) {
+                    showToast("Review saved successfully!")
 
-        android.widget.Toast.makeText(requireContext(), "Review saved successfully!", android.widget.Toast.LENGTH_SHORT).show()
+                    // Navigate back after a short delay
+                    view?.postDelayed({
+                        findNavController().popBackStack()
+                    }, 1000)
 
-        // Navigate back to album detail
-        findNavController().popBackStack()
+                } else {
+                    showToast("Failed to save review. Please try again.")
+                    // Reset save button
+                    view?.findViewById<TextView>(R.id.save_button)?.text = "Save Review"
+                }
+            }
+        }
+    }
+
+    private fun showToast(message: String) {
+        android.widget.Toast.makeText(requireContext(), message, android.widget.Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        // Clean up any resources if needed
     }
 }

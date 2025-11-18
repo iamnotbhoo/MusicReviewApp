@@ -27,7 +27,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Graham"
+                android:text="@string/graham"
                 android:textColor="@android:color/white"
                 android:textSize="18sp"
                 android:textStyle="bold"
@@ -74,7 +74,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="bottom|end"
-                    android:text="PRO"
+                    android:text="@string/pro"
                     android:textColor="@android:color/white"
                     android:background="#9B8FAA"
                     android:paddingStart="12dp"
@@ -104,7 +104,7 @@
                     android:id="@+id/user_location"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Gotham"
+                    android:text="@string/gotham"
                     android:textColor="#9E9E9E"
                     android:textSize="12sp"
                     android:layout_marginEnd="16dp" />
@@ -120,7 +120,7 @@
                     android:id="@+id/user_website"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="iamnotbhoo.co.za"
+                    android:text="@string/iamnotbhoo_co_za"
                     android:textColor="#9E9E9E"
                     android:textSize="12sp" />
             </LinearLayout>
@@ -130,7 +130,7 @@
                 android:id="@+id/user_bio"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="YuCk"
+                android:text="@string/yuck"
                 android:textColor="#616161"
                 android:textSize="14sp"
                 android:gravity="center"
@@ -143,7 +143,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="FAVORITES"
+                android:text="@string/favorites"
                 android:textColor="#9E9E9E"
                 android:textSize="12sp"
                 android:textStyle="bold"
@@ -166,7 +166,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="RECENT ACTIVITY"
+                android:text="@string/recent_activity"
                 android:textColor="#9E9E9E"
                 android:textSize="12sp"
                 android:textStyle="bold"
@@ -191,7 +191,7 @@
                 android:id="@+id/more_activity_button"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
-                android:text="MORE ACTIVITY"
+                android:text="@string/more_activity"
                 android:textColor="#9B8FAA"
                 android:textSize="14sp"
                 android:textStyle="bold"
@@ -231,7 +231,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Albums"
+                    android:text="@string/albums"
                     android:textColor="#212121"
                     android:textSize="16sp" />
 
@@ -239,7 +239,7 @@
                     android:id="@+id/albums_count"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="238 / 97 this year"
+                    android:text="@string/_238_97_this_year"
                     android:textColor="#9E9E9E"
                     android:textSize="14sp" />
             </LinearLayout>
@@ -261,7 +261,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Diary"
+                    android:text="@string/diary"
                     android:textColor="#212121"
                     android:textSize="16sp" />
 
@@ -269,7 +269,7 @@
                     android:id="@+id/diary_count"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="110 / 110 this year"
+                    android:text="@string/_110_110_this_year"
                     android:textColor="#9E9E9E"
                     android:textSize="14sp" />
             </LinearLayout>
@@ -291,7 +291,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Reviews"
+                    android:text="@string/reviews"
                     android:textColor="#212121"
                     android:textSize="16sp" />
 
@@ -299,7 +299,7 @@
                     android:id="@+id/reviews_count"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="84"
+                    android:text="@string/_84"
                     android:textColor="#9E9E9E"
                     android:textSize="14sp" />
             </LinearLayout>
@@ -321,7 +321,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Lists"
+                    android:text="@string/lists"
                     android:textColor="#212121"
                     android:textSize="16sp" />
 
@@ -329,7 +329,7 @@
                     android:id="@+id/lists_count"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="2"
+                    android:text="@string/_2"
                     android:textColor="#9E9E9E"
                     android:textSize="14sp" />
             </LinearLayout>
@@ -351,7 +351,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Playlist"
+                    android:text="@string/playlist"
                     android:textColor="#212121"
                     android:textSize="16sp" />
 
@@ -359,7 +359,7 @@
                     android:id="@+id/playlists_count"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="324"
+                    android:text="@string/_324"
                     android:textColor="#9E9E9E"
                     android:textSize="14sp" />
             </LinearLayout>
@@ -381,7 +381,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Likes"
+                    android:text="@string/likes"
                     android:textColor="#212121"
                     android:textSize="16sp" />
 
@@ -389,7 +389,7 @@
                     android:id="@+id/likes_count"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="520"
+                    android:text="@string/_520"
                     android:textColor="#9E9E9E"
                     android:textSize="14sp" />
             </LinearLayout>

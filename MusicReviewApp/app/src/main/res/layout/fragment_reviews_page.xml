@@ -11,7 +11,7 @@
         android:id="@+id/reviews_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Popular this week"
+        android:text="@string/popular_this_week"
         android:textSize="17sp"
         android:textColor="#8B7D9E"
         android:paddingHorizontal="16dp"
@@ -57,7 +57,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="JACKBOYS 2"
+                        android:text="@string/jackboys_2"
                         android:textSize="16sp"
                         android:textStyle="bold"
                         android:textColor="#000" />
@@ -65,7 +65,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text=" 2025"
+                        android:text="@string/_2025"
                         android:textSize="14sp"
                         android:textColor="#666" />
                 </LinearLayout>
@@ -129,7 +129,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="he's done it againnn"
+                    android:text="@string/he_s_done_it_againnn"
                     android:textColor="#000"
                     android:textSize="14sp"
                     android:lineSpacingExtra="4dp" />

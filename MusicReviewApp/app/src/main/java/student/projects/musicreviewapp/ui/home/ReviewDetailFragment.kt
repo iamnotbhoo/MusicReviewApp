@@ -11,23 +11,29 @@ import androidx.core.widget.ImageViewCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import student.projects.musicreviewapp.R
-import student.projects.musicreviewapp.auth.LikeManager
-import student.projects.musicreviewapp.auth.ReviewManager
+import student.projects.musicreviewapp.auth.FirebaseLikeManager
+import student.projects.musicreviewapp.auth.FirebaseReviewManager
 import student.projects.musicreviewapp.models.Review
 
 class ReviewDetailFragment : Fragment() {
 
     private lateinit var review: Review
-    private lateinit var likeManager: LikeManager
-    private lateinit var reviewManager: ReviewManager
+    private lateinit var likeManager: FirebaseLikeManager
+    private lateinit var reviewManager: FirebaseReviewManager
+    private val auth = FirebaseAuth.getInstance()
+    private val currentUserId get() = auth.currentUser?.uid ?: ""
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        likeManager = LikeManager(requireContext())
-        reviewManager = ReviewManager(requireContext())
+        likeManager = FirebaseLikeManager(requireContext())
+        reviewManager = FirebaseReviewManager(requireContext())
         return inflater.inflate(R.layout.fragment_review_detail, container, false)
     }
 
@@ -93,25 +99,42 @@ class ReviewDetailFragment : Fragment() {
         val likeButton = view.findViewById<ImageView>(R.id.like_icon)
         val likeCountText = view.findViewById<TextView>(R.id.likes_count)
 
-        // Set initial state
-        val isLiked = likeManager.isReviewLiked(review.id)
-        updateLikeButton(isLiked, review.likes, likeButton, likeCountText)
+        // Set initial state using callback
+        likeManager.isReviewLiked(review.id) { isLiked ->
+            activity?.runOnUiThread {
+                updateLikeButton(isLiked, review.likes, likeButton, likeCountText)
+            }
+        }
 
         likeButton.setOnClickListener {
-            if (likeManager.isReviewLiked(review.id)) {
-                // Unlike the review
-                likeManager.unlikeReview(review.id)
-                reviewManager.unlikeReview(review.id)
-                val newLikes = maxOf(0, review.likes - 1)
-                updateLikeButton(false, newLikes, likeButton, likeCountText)
-                showToast("Review unliked")
-            } else {
-                // Like the review
-                likeManager.likeReview(review)
-                reviewManager.likeReview(review.id)
-                val newLikes = review.likes + 1
-                updateLikeButton(true, newLikes, likeButton, likeCountText)
-                showToast("Review liked")
+            likeManager.isReviewLiked(review.id) { isCurrentlyLiked ->
+                activity?.runOnUiThread {
+                    if (isCurrentlyLiked) {
+                        // Unlike the review using coroutines
+                        CoroutineScope(Dispatchers.Main).launch {
+                            val success = reviewManager.unlikeReview(review.id, currentUserId)
+                            if (success) {
+                                val newLikes = maxOf(0, review.likes - 1)
+                                updateLikeButton(false, newLikes, likeButton, likeCountText)
+                                showToast("Review unliked")
+                            } else {
+                                showToast("Failed to unlike review")
+                            }
+                        }
+                    } else {
+                        // Like the review using coroutines
+                        CoroutineScope(Dispatchers.Main).launch {
+                            val success = reviewManager.likeReview(review.id, currentUserId)
+                            if (success) {
+                                val newLikes = review.likes + 1
+                                updateLikeButton(true, newLikes, likeButton, likeCountText)
+                                showToast("Review liked")
+                            } else {
+                                showToast("Failed to like review")
+                            }
+                        }
+                    }
+                }
             }
         }
     }

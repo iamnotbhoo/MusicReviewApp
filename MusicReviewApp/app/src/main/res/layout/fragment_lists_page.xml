@@ -35,7 +35,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Fav Rap Albums 2025"
+                    android:text="@string/fav_rap_albums_2025"
                     android:textColor="#000000"
                     android:textSize="16sp"
                     android:textStyle="bold"/>
@@ -43,7 +43,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Flame"
+                    android:text="@string/flame"
                     android:textColor="#666666"
                     android:textSize="14sp"/>
             </LinearLayout>
@@ -75,7 +75,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="NOT ranked"
+                android:text="@string/not_ranked"
                 android:textColor="#000000"
                 android:textSize="14sp"
                 android:paddingHorizontal="16dp"/>
@@ -104,7 +104,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="G.O.A.T"
+                    android:text="@string/g_o_a_t"
                     android:textColor="#000000"
                     android:textSize="16sp"
                     android:textStyle="bold"/>
@@ -112,7 +112,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="starboy12"
+                    android:text="@string/starboy12"
                     android:textColor="#666666"
                     android:textSize="14sp"/>
             </LinearLayout>
@@ -144,7 +144,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="music"
+                android:text="@string/music"
                 android:textColor="#000000"
                 android:textSize="14sp"
                 android:paddingHorizontal="16dp"/>

@@ -1,4 +1,3 @@
-// UserReviewsFragment.kt - Update to load actual reviews
 package student.projects.musicreviewapp.ui.home
 
 import android.os.Bundle
@@ -10,18 +9,25 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.widget.ImageViewCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.launch
 import student.projects.musicreviewapp.R
-import student.projects.musicreviewapp.auth.ReviewManager
 import student.projects.musicreviewapp.models.Review
+import student.projects.musicreviewapp.repositories.FirebaseRepository
 
 class UserReviewsFragment : Fragment() {
 
     private lateinit var reviewsAdapter: UserReviewsAdapter
-    private lateinit var reviewManager: ReviewManager
+    private val repository = FirebaseRepository()
+    private val auth = FirebaseAuth.getInstance()
+    private val currentUserId get() = auth.currentUser?.uid ?: ""
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -32,7 +38,6 @@ class UserReviewsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        reviewManager = ReviewManager(requireContext())
 
         setupViews(view)
         loadUserReviews()
@@ -46,7 +51,9 @@ class UserReviewsFragment : Fragment() {
 
         // Setup RecyclerView
         val reviewsRecycler = view.findViewById<RecyclerView>(R.id.reviews_recycler)
-        reviewsAdapter = UserReviewsAdapter()
+        reviewsAdapter = UserReviewsAdapter { review ->
+            toggleReviewLike(review)
+        }
 
         // Set click listener for reviews
         reviewsAdapter.onReviewClick = { review ->
@@ -57,6 +64,9 @@ class UserReviewsFragment : Fragment() {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = reviewsAdapter
         }
+
+        // Setup empty state
+        updateEmptyState()
     }
 
     private fun navigateToReviewDetail(review: Review) {
@@ -67,12 +77,72 @@ class UserReviewsFragment : Fragment() {
     }
 
     private fun loadUserReviews() {
-        val userReviews = reviewManager.getReviews()
-        reviewsAdapter.submitList(userReviews)
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val reviews = repository.getReviewsByUser(currentUserId)
+                reviewsAdapter.submitList(reviews)
+                updateEmptyState()
+            } catch (e: Exception) {
+                showToast("Failed to load your reviews")
+            }
+        }
     }
 
-    class UserReviewsAdapter : RecyclerView.Adapter<UserReviewsAdapter.ReviewViewHolder>() {
-        private var reviews = listOf<Review>()
+    private fun toggleReviewLike(review: Review) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val isCurrentlyLiked = repository.isReviewLiked(currentUserId, review.id)
+                if (isCurrentlyLiked) {
+                    repository.unlikeReview(currentUserId, review.id)
+                    // Update local review object
+                    val updatedReview = review.copy(
+                        liked = false,
+                        likes = maxOf(0, review.likes - 1)
+                    )
+                    updateReviewInAdapter(updatedReview)
+                    showToast("Review unliked")
+                } else {
+                    repository.likeReview(currentUserId, review.id)
+                    // Update local review object
+                    val updatedReview = review.copy(
+                        liked = true,
+                        likes = review.likes + 1
+                    )
+                    updateReviewInAdapter(updatedReview)
+                    showToast("Review liked")
+                }
+            } catch (e: Exception) {
+                showToast("Failed to update like")
+            }
+        }
+    }
+
+    private fun updateReviewInAdapter(updatedReview: Review) {
+        val currentList = reviewsAdapter.currentList.toMutableList()
+        val index = currentList.indexOfFirst { it.id == updatedReview.id }
+        if (index != -1) {
+            currentList[index] = updatedReview
+            reviewsAdapter.submitList(currentList)
+        }
+    }
+
+    private fun updateEmptyState() {
+        val emptyState = requireView().findViewById<View>(R.id.empty_state)
+        val reviewsRecycler = requireView().findViewById<RecyclerView>(R.id.reviews_recycler)
+
+        if (reviewsAdapter.itemCount == 0) {
+            emptyState?.visibility = View.VISIBLE
+            reviewsRecycler?.visibility = View.GONE
+        } else {
+            emptyState?.visibility = View.GONE
+            reviewsRecycler?.visibility = View.VISIBLE
+        }
+    }
+
+    class UserReviewsAdapter(
+        private val onLikeClick: (Review) -> Unit
+    ) : ListAdapter<Review, UserReviewsAdapter.ReviewViewHolder>(ReviewDiffCallback()) {
+
         var onReviewClick: ((Review) -> Unit)? = null
 
         class ReviewViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -87,6 +157,7 @@ class UserReviewsFragment : Fragment() {
             val star4: ImageView = itemView.findViewById(R.id.star4)
             val star5: ImageView = itemView.findViewById(R.id.star5)
             val likeIcon: ImageView = itemView.findViewById(R.id.like_icon)
+            val likesCount: TextView = itemView.findViewById(R.id.likes_count)
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReviewViewHolder {
@@ -96,7 +167,7 @@ class UserReviewsFragment : Fragment() {
         }
 
         override fun onBindViewHolder(holder: ReviewViewHolder, position: Int) {
-            val review = reviews[position]
+            val review = getItem(position)
 
             // Load album cover
             if (!review.musicCoverUrl.isNullOrEmpty()) {
@@ -113,7 +184,8 @@ class UserReviewsFragment : Fragment() {
             holder.albumTitle.text = review.musicTitle
             holder.albumYear.text = review.musicYear
             holder.reviewContent.text = review.content
-            holder.timestamp.text = review.timestamp
+            holder.timestamp.text = formatTimestamp(review.timestamp)
+            holder.likesCount.text = "${review.likes}"
 
             // Update star ratings
             updateStarRating(holder, review.rating)
@@ -123,9 +195,7 @@ class UserReviewsFragment : Fragment() {
 
             // Set like click listener
             holder.likeIcon.setOnClickListener {
-                // Toggle like state - you'd update this in your database
-                val newLiked = !review.liked
-                updateLikeIcon(holder, newLiked)
+                onLikeClick(review)
             }
 
             // Set click listener for the entire review item
@@ -146,19 +216,48 @@ class UserReviewsFragment : Fragment() {
         }
 
         private fun updateLikeIcon(holder: ReviewViewHolder, liked: Boolean) {
-            val color = if (liked)
-                ContextCompat.getColor(holder.itemView.context, R.color.orange_500)
-            else
-                ContextCompat.getColor(holder.itemView.context, R.color.gray_400)
-
-            ImageViewCompat.setImageTintList(holder.likeIcon, android.content.res.ColorStateList.valueOf(color))
+            if (liked) {
+                holder.likeIcon.setImageResource(R.drawable.ic_heart_orange)
+                holder.likeIcon.setColorFilter(
+                    ContextCompat.getColor(holder.itemView.context, R.color.orange_500)
+                )
+            } else {
+                holder.likeIcon.setImageResource(R.drawable.ic_heart)
+                holder.likeIcon.setColorFilter(
+                    ContextCompat.getColor(holder.itemView.context, R.color.gray_400)
+                )
+            }
         }
 
-        override fun getItemCount(): Int = reviews.size
-
-        fun submitList(newReviews: List<Review>) {
-            reviews = newReviews
-            notifyDataSetChanged()
+        private fun formatTimestamp(timestamp: String): String {
+            // Format the timestamp for better display
+            return try {
+                // You can implement your timestamp formatting logic here
+                // For example: convert ISO format to "2 days ago", "1 week ago", etc.
+                timestamp
+            } catch (e: Exception) {
+                timestamp
+            }
         }
+    }
+
+    class ReviewDiffCallback : DiffUtil.ItemCallback<Review>() {
+        override fun areItemsTheSame(oldItem: Review, newItem: Review): Boolean {
+            return oldItem.id == newItem.id
+        }
+
+        override fun areContentsTheSame(oldItem: Review, newItem: Review): Boolean {
+            return oldItem == newItem
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Refresh data when returning to this fragment
+        loadUserReviews()
+    }
+
+    private fun showToast(message: String) {
+        android.widget.Toast.makeText(requireContext(), message, android.widget.Toast.LENGTH_SHORT).show()
     }
 }

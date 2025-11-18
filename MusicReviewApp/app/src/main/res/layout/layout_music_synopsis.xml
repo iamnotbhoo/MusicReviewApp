@@ -9,7 +9,7 @@
         android:id="@+id/music_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Song Title"
+        android:text="@string/song_title"
         android:textSize="24sp"
         android:textColor="@color/white"
         android:textStyle="bold" />
@@ -18,7 +18,7 @@
         android:id="@+id/music_artist"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Artist Name"
+        android:text="@string/artist_name"
         android:textSize="18sp"
         android:textColor="@color/white"
         android:paddingTop="4dp" />
@@ -33,7 +33,7 @@
             android:id="@+id/music_year"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="2023"
+            android:text="@string/_2023"
             android:textSize="14sp"
             android:textColor="@color/grey_400" />
 
@@ -48,7 +48,7 @@
             android:id="@+id/music_album"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Album Name"
+            android:text="@string/album_name"
             android:textSize="14sp"
             android:textColor="@color/grey_400" />
 
@@ -58,7 +58,7 @@
         android:id="@+id/music_description"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Song description goes here..."
+        android:text="@string/song_description_goes_here"
         android:textSize="14sp"
         android:textColor="@color/grey_400"
         android:paddingTop="16dp" />

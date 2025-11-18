@@ -25,7 +25,7 @@
 
         <TextView
             android:id="@+id/text_listen"
-            android:text="Listen"
+            android:text="@string/listen"
             android:textSize="16sp"
             android:textColor="#000000"
             android:layout_marginStart="14dp"
@@ -50,7 +50,7 @@
 
         <TextView
             android:id="@+id/text_like"
-            android:text="Like"
+            android:text="@string/like"
             android:textSize="16sp"
             android:textColor="#000000"
             android:layout_marginStart="14dp"
@@ -82,7 +82,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Add to Playlist"
+            android:text="@string/add_to_playlist"
             android:textColor="@color/gray_400"
             android:textSize="16sp" />
 
@@ -110,7 +110,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Add to Lists"
+            android:text="@string/add_to_lists"
             android:textColor="@color/gray_400"
             android:textSize="16sp" />
 
@@ -118,7 +118,7 @@
 
     <!-- RATE TITLE -->
     <TextView
-        android:text="Rate"
+        android:text="@string/rate"
         android:textSize="15sp"
         android:textColor="#000000"
         android:layout_marginTop="10dp"
@@ -156,7 +156,7 @@
             app:tint="#808080"/>
 
         <TextView
-            android:text="Review / Log"
+            android:text="@string/review_log"
             android:textSize="16sp"
             android:textColor="#000000"
             android:layout_marginStart="14dp"
@@ -167,7 +167,7 @@
     <!-- DONE -->
     <TextView
         android:id="@+id/action_done"
-        android:text="Done"
+        android:text="@string/done"
         android:textSize="17sp"
         android:textStyle="bold"
         android:textColor="#6200EE"

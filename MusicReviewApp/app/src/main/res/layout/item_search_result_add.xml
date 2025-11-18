@@ -45,7 +45,7 @@
                 android:id="@+id/album_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Album Title"
+                android:text="@string/album_title"
                 android:textColor="#000000"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -54,7 +54,7 @@
                 android:id="@+id/album_artist"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Artist Name"
+                android:text="@string/artist_name"
                 android:textColor="#808080"
                 android:textSize="14sp"
                 android:layout_marginTop="2dp" />
@@ -63,7 +63,7 @@
                 android:id="@+id/album_year"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="2024"
+                android:text="@string/_2024"
                 android:textColor="#808080"
                 android:textSize="12sp"
                 android:layout_marginTop="2dp" />

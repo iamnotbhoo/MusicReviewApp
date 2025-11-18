@@ -33,7 +33,7 @@
                 android:id="@+id/album_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Album Title"
+                android:text="@string/album_title"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:textColor="#000" />
@@ -42,7 +42,7 @@
                 android:id="@+id/album_year"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text=" 2025"
+                android:text="@string/_2025"
                 android:textSize="14sp"
                 android:textColor="#666" />
         </LinearLayout>
@@ -112,7 +112,7 @@
                 android:id="@+id/user_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Username"
+                android:text="@string/username"
                 android:textSize="12sp"
                 android:textColor="#666" />
 
@@ -123,7 +123,7 @@
             android:id="@+id/review_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Review content goes here..."
+            android:text="@string/review_content_goes_here"
             android:textColor="#000"
             android:textSize="14sp"
             android:lineSpacingExtra="4dp" />

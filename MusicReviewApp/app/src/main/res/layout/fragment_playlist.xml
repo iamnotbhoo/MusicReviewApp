@@ -24,7 +24,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:text="Playlist"
+            android:text="@string/playlist"
             android:textSize="20sp"
             android:textStyle="bold" />
 
@@ -34,7 +34,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Your Playlist"
+        android:text="@string/your_playlist"
         android:textSize="24sp"
         android:textStyle="bold"
         android:layout_marginBottom="8dp" />
@@ -43,7 +43,7 @@
         android:id="@+id/album_count"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="0 albums"
+        android:text="@string/_0_albums"
         android:textSize="14sp"
         android:textColor="@color/grey_600"
         android:layout_marginBottom="24dp" />
@@ -53,7 +53,7 @@
         android:id="@+id/empty_state_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Your playlist is empty\nAdd albums from album details"
+        android:text="@string/your_playlist_is_empty_nadd_albums_from_album_details"
         android:textSize="16sp"
         android:textColor="@color/grey_400"
         android:gravity="center"

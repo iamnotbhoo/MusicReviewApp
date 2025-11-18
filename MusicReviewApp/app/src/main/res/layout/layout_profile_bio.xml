@@ -38,7 +38,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Username"
+                    android:text="@string/username"
                     android:textSize="24sp"
                     android:textColor="@color/white"
                     android:textStyle="bold" />
@@ -47,7 +47,7 @@
                     android:id="@+id/edit_profile_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="EDIT PROFILE"
+                    android:text="@string/edit_profile"
                     android:textSize="12sp"
                     android:textColor="@color/white"
                     android:background="@color/grey_700"
@@ -60,7 +60,7 @@
                 android:id="@+id/user_bio"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="User bio will appear here"
+                android:text="@string/user_bio_will_appear_here"
                 android:textSize="12sp"
                 android:textColor="@color/grey_400"
                 android:paddingTop="8dp" />
@@ -95,7 +95,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="FAVORITES"
+                android:text="@string/favorites"
                 android:textSize="12sp"
                 android:textColor="@color/white" />
 
@@ -125,7 +125,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="LISTENED"
+                android:text="@string/listened"
                 android:textSize="12sp"
                 android:textColor="@color/white" />
 

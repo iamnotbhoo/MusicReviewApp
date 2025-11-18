@@ -13,23 +13,23 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import student.projects.musicreviewapp.R
-import student.projects.musicreviewapp.auth.LikeManager
-import student.projects.musicreviewapp.auth.ListManager
+import student.projects.musicreviewapp.auth.FirebaseLikeManager
+import student.projects.musicreviewapp.auth.FirebaseListManager
 import student.projects.musicreviewapp.models.UserList
 import student.projects.musicreviewapp.models.Music
 
 class ListDetailFragment : Fragment() {
 
     private lateinit var userList: UserList
-    private lateinit var listManager: ListManager
-    private lateinit var likeManager: LikeManager
+    private lateinit var listManager: FirebaseListManager
+    private lateinit var likeManager: FirebaseLikeManager
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        listManager = ListManager(requireContext())
-        likeManager = LikeManager(requireContext())
+        listManager = FirebaseListManager(requireContext())
+        likeManager = FirebaseLikeManager(requireContext())
         return inflater.inflate(R.layout.fragment_list_detail, container, false)
     }
 
@@ -70,25 +70,44 @@ class ListDetailFragment : Fragment() {
         val likeButton = view.findViewById<ImageView>(R.id.like_icon)
         val likeCountText = view.findViewById<TextView>(R.id.likes_count)
 
-        // Set initial state
-        val isLiked = likeManager.isListLiked(userList.id)
-        updateLikeButton(isLiked, userList.likes, likeButton, likeCountText)
+        // Set initial state - check if list is liked
+        likeManager.isListLiked(userList.id) { isLiked ->
+            activity?.runOnUiThread {
+                updateLikeButton(isLiked, userList.likes, likeButton, likeCountText)
+            }
+        }
 
         likeButton.setOnClickListener {
-            if (likeManager.isListLiked(userList.id)) {
-                // Unlike the list
-                likeManager.unlikeList(userList.id)
-                listManager.unlikeList(userList.id)
-                val newLikes = maxOf(0, userList.likes - 1)
-                updateLikeButton(false, newLikes, likeButton, likeCountText)
-                showToast("List unliked")
-            } else {
-                // Like the list
-                likeManager.likeList(userList)
-                listManager.likeList(userList.id)
-                val newLikes = userList.likes + 1
-                updateLikeButton(true, newLikes, likeButton, likeCountText)
-                showToast("List liked")
+            likeManager.isListLiked(userList.id) { isCurrentlyLiked ->
+                activity?.runOnUiThread {
+                    if (isCurrentlyLiked) {
+                        // Unlike the list
+                        likeManager.unlikeList(userList.id) { success ->
+                            if (success) {
+                                listManager.unlikeList(userList.id) { listSuccess ->
+                                    activity?.runOnUiThread {
+                                        val newLikes = maxOf(0, userList.likes - 1)
+                                        updateLikeButton(false, newLikes, likeButton, likeCountText)
+                                        showToast("List unliked")
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        // Like the list
+                        likeManager.likeList(userList) { success ->
+                            if (success) {
+                                listManager.likeList(userList.id) { listSuccess ->
+                                    activity?.runOnUiThread {
+                                        val newLikes = userList.likes + 1
+                                        updateLikeButton(true, newLikes, likeButton, likeCountText)
+                                        showToast("List liked")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }

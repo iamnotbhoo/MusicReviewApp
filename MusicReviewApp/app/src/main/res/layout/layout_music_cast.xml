@@ -8,7 +8,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="FEATURED ARTISTS"
+        android:text="@string/featured_artists"
         android:textSize="14sp"
         android:textColor="@color/grey_400"
         android:paddingBottom="8dp" />
@@ -17,7 +17,7 @@
         android:id="@+id/no_cast_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="The artists for this song remain a mystery..."
+        android:text="@string/the_artists_for_this_song_remain_a_mystery"
         android:textSize="12sp"
         android:textColor="@color/grey_400" />
 

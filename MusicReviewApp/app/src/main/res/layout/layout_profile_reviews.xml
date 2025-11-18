@@ -16,7 +16,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="REVIEWS"
+            android:text="@string/review"
             android:textSize="14sp"
             android:textColor="@color/grey_400"
             android:textStyle="bold" />
@@ -28,7 +28,7 @@
         android:id="@+id/no_profile_reviews_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="This user hasn't reviewed any music yet."
+        android:text="@string/this_user_hasn_t_reviewed_any_music_yet"
         android:textSize="14sp"
         android:textColor="@color/grey_400"
         android:paddingTop="8dp"

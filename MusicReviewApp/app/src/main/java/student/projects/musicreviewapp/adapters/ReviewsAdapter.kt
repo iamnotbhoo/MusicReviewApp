@@ -7,16 +7,17 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.widget.ImageViewCompat
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import student.projects.musicreviewapp.R
 import student.projects.musicreviewapp.models.Review
 
-class ReviewsAdapter(private var reviews: List<Review>) :
-    RecyclerView.Adapter<ReviewsAdapter.ReviewViewHolder>() {
-
-    // ADDED: Click listener property
-    private var onReviewClickListener: ((Review) -> Unit)? = null
+class ReviewsAdapter(
+    private val onReviewClick: (Review) -> Unit,
+    private val onLikeClick: (Review, Boolean) -> Unit
+) : ListAdapter<Review, ReviewsAdapter.ReviewViewHolder>(ReviewDiffCallback()) {
 
     class ReviewViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val albumCover: ImageView = itemView.findViewById(R.id.album_cover)
@@ -30,6 +31,7 @@ class ReviewsAdapter(private var reviews: List<Review>) :
         val star4: ImageView = itemView.findViewById(R.id.star4)
         val star5: ImageView = itemView.findViewById(R.id.star5)
         val likeIcon: ImageView = itemView.findViewById(R.id.like_icon)
+        val likesCount: TextView = itemView.findViewById(R.id.likes_count)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReviewViewHolder {
@@ -39,7 +41,7 @@ class ReviewsAdapter(private var reviews: List<Review>) :
     }
 
     override fun onBindViewHolder(holder: ReviewViewHolder, position: Int) {
-        val review = reviews[position]
+        val review = getItem(position)
 
         // Load album cover
         if (!review.musicCoverUrl.isNullOrEmpty()) {
@@ -57,6 +59,7 @@ class ReviewsAdapter(private var reviews: List<Review>) :
         holder.albumYear.text = review.musicYear
         holder.reviewText.text = review.content
         holder.userName.text = review.userName
+        holder.likesCount.text = "${review.likes}"
 
         // Update star ratings
         updateStarRating(holder, review.rating)
@@ -64,16 +67,15 @@ class ReviewsAdapter(private var reviews: List<Review>) :
         // Update like icon
         updateLikeIcon(holder, review.liked)
 
-        // ADDED: Set click listener for the entire review item
+        // Set click listener for the entire review item
         holder.itemView.setOnClickListener {
-            onReviewClickListener?.invoke(review)
+            onReviewClick(review)
         }
 
-        // ADDED: Set like click listener
+        // Set like click listener
         holder.likeIcon.setOnClickListener {
-            // Toggle like state (you can update this in your database)
             val newLiked = !review.liked
-            updateLikeIcon(holder, newLiked)
+            onLikeClick(review, newLiked)
         }
     }
 
@@ -89,23 +91,26 @@ class ReviewsAdapter(private var reviews: List<Review>) :
     }
 
     private fun updateLikeIcon(holder: ReviewViewHolder, liked: Boolean) {
-        val color = if (liked)
-            ContextCompat.getColor(holder.itemView.context, R.color.orange_500)
-        else
-            ContextCompat.getColor(holder.itemView.context, R.color.gray_400)
+        if (liked) {
+            holder.likeIcon.setImageResource(R.drawable.ic_heart_orange)
+            holder.likeIcon.setColorFilter(
+                ContextCompat.getColor(holder.itemView.context, R.color.orange_500)
+            )
+        } else {
+            holder.likeIcon.setImageResource(R.drawable.ic_heart)
+            holder.likeIcon.setColorFilter(
+                ContextCompat.getColor(holder.itemView.context, R.color.gray_400)
+            )
+        }
+    }
+}
 
-        ImageViewCompat.setImageTintList(holder.likeIcon, android.content.res.ColorStateList.valueOf(color))
+class ReviewDiffCallback : DiffUtil.ItemCallback<Review>() {
+    override fun areItemsTheSame(oldItem: Review, newItem: Review): Boolean {
+        return oldItem.id == newItem.id
     }
 
-    override fun getItemCount(): Int = reviews.size
-
-    fun updateData(newReviews: List<Review>) {
-        reviews = newReviews
-        notifyDataSetChanged()
-    }
-
-    // ADDED: Method to set click listener
-    fun setOnReviewClickListener(listener: (Review) -> Unit) {
-        onReviewClickListener = listener
+    override fun areContentsTheSame(oldItem: Review, newItem: Review): Boolean {
+        return oldItem == newItem
     }
 }

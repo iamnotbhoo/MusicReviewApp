@@ -29,7 +29,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Review"
+            android:text="@string/review"
             android:textColor="@android:color/white"
             android:textSize="18sp"
             android:textStyle="bold"
@@ -79,7 +79,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="iamnotbhoo"
+                    android:text="@string/iamnotbhoo"
                     android:textColor="#212121"
                     android:textSize="16sp"
                     android:textStyle="bold" />
@@ -91,7 +91,7 @@
                 android:id="@+id/album_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Materialists"
+                android:text="@string/materialists"
                 android:textColor="#212121"
                 android:textSize="20sp"
                 android:textStyle="bold"
@@ -101,7 +101,7 @@
                 android:id="@+id/album_year"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="2025"
+                android:text="@string/_2025"
                 android:textColor="#757575"
                 android:textSize="16sp"
                 android:layout_marginBottom="12dp" />
@@ -154,7 +154,7 @@
                 android:id="@+id/review_date"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Listened 12 Nov 2025"
+                android:text="@string/listened_12_nov_2025"
                 android:textColor="#9E9E9E"
                 android:textSize="14sp"
                 android:layout_marginBottom="20dp" />
@@ -164,7 +164,7 @@
                 android:id="@+id/review_content"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Pedro got a lot of anxiety in this one"
+                android:text="@string/pedro_got_a_lot_of_anxiety_in_this_one"
                 android:textColor="#424242"
                 android:textSize="16sp"
                 android:lineSpacingExtra="6dp"
@@ -190,7 +190,7 @@
                     android:id="@+id/likes_count"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="3 likes"
+                    android:text="@string/_3_likes"
                     android:textColor="#757575"
                     android:textSize="14sp" />
 
@@ -225,7 +225,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Reply"
+                android:text="@string/reply"
                 android:textColor="#9B8FAA"
                 android:textSize="14sp"
                 android:textStyle="bold" />
@@ -254,7 +254,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Album"
+                android:text="@string/album"
                 android:textColor="#9B8FAA"
                 android:textSize="14sp"
                 android:textStyle="bold" />

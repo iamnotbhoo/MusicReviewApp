@@ -33,7 +33,7 @@
                 android:id="@+id/music_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Song Title"
+                android:text="@string/song_title"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:textColor="@color/white" />
@@ -42,7 +42,7 @@
                 android:id="@+id/artist_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Artist Name"
+                android:text="@string/artist_name"
                 android:textSize="14sp"
                 android:textColor="@android:color/darker_gray" />
 
@@ -67,7 +67,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
-                    android:text="0 reviews"
+                    android:text="@string/_0_reviews"
                     android:textSize="12sp"
                     android:textColor="@android:color/darker_gray" />
 
@@ -78,7 +78,7 @@
                 android:id="@+id/music_overview"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Album description or overview"
+                android:text="@string/album_description_or_overview"
                 android:textSize="12sp"
                 android:textColor="@android:color/darker_gray"
                 android:maxLines="3"

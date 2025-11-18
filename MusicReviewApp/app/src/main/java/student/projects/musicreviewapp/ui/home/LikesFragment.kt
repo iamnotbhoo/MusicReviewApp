@@ -18,9 +18,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import student.projects.musicreviewapp.R
 import student.projects.musicreviewapp.auth.AuthManager
-import student.projects.musicreviewapp.auth.LikeManager
-import student.projects.musicreviewapp.auth.ListManager
-import student.projects.musicreviewapp.auth.ReviewManager
+import student.projects.musicreviewapp.auth.FirebaseLikeManager
+import student.projects.musicreviewapp.auth.FirebaseReviewManager
+import student.projects.musicreviewapp.auth.FirebaseListManager
 import student.projects.musicreviewapp.models.Music
 import student.projects.musicreviewapp.models.Review
 import student.projects.musicreviewapp.models.UserList
@@ -28,9 +28,9 @@ import student.projects.musicreviewapp.models.UserList
 class LikesFragment : Fragment() {
 
     private lateinit var authManager: AuthManager
-    private lateinit var likeManager: LikeManager
-    private lateinit var reviewManager: ReviewManager
-    private lateinit var listManager: ListManager
+    private lateinit var likeManager: FirebaseLikeManager
+    private lateinit var reviewManager: FirebaseReviewManager
+    private lateinit var listManager: FirebaseListManager
 
     // Tab buttons
     private lateinit var tabAlbums: Button
@@ -56,10 +56,10 @@ class LikesFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        authManager = AuthManager(requireContext())
-        likeManager = LikeManager(requireContext())
-        reviewManager = ReviewManager(requireContext())
-        listManager = ListManager(requireContext())
+        authManager = AuthManager()
+        likeManager = FirebaseLikeManager(requireContext())
+        reviewManager = FirebaseReviewManager(requireContext())
+        listManager = FirebaseListManager(requireContext())
         return inflater.inflate(R.layout.fragment_likes, container, false)
     }
 
@@ -142,62 +142,105 @@ class LikesFragment : Fragment() {
     }
 
     private fun loadLikedAlbums() {
-        val likedAlbums = likeManager.getLikedAlbums()
-        Log.d("LikesFragment", "Loaded ${likedAlbums.size} liked albums")
+        likeManager.getLikedAlbums { likedAlbumIds ->
+            activity?.runOnUiThread {
+                Log.d("LikesFragment", "Loaded ${likedAlbumIds.size} liked album IDs")
 
-        val albumsRecycler = requireView().findViewById<RecyclerView>(R.id.liked_albums_recycler)
+                val albumsRecycler = requireView().findViewById<RecyclerView>(R.id.liked_albums_recycler)
 
-        if (likedAlbums.isEmpty()) {
-            albumsEmptyState.isVisible = true
-            albumsRecycler.isVisible = false
-        } else {
-            albumsEmptyState.isVisible = false
-            albumsRecycler.isVisible = true
+                if (likedAlbumIds.isEmpty()) {
+                    albumsEmptyState.isVisible = true
+                    albumsRecycler.isVisible = false
+                } else {
+                    // Convert album IDs to Music objects (you might need to fetch album details from your repository)
+                    // For now, we'll create placeholder Music objects
+                    val likedAlbums = likedAlbumIds.map { albumId ->
+                        Music(
+                            id = albumId,
+                            title = "Album $albumId",
+                            artist = "Artist",
+                            album = "Album",
+                            releaseYear = 2023,
+                            genre = "Various",
+                            coverImage = "",
+                            averageRating = 4.0,
+                            reviewCount = 0
+                        )
+                    }
 
-            val adapter = LikedAlbumsAdapter(likedAlbums) { album ->
-                navigateToAlbumDetail(album)
+                    albumsEmptyState.isVisible = false
+                    albumsRecycler.isVisible = true
+
+                    val adapter = LikedAlbumsAdapter(likedAlbums) { album ->
+                        navigateToAlbumDetail(album)
+                    }
+                    albumsRecycler.adapter = adapter
+                }
             }
-            albumsRecycler.adapter = adapter
         }
     }
 
     private fun loadLikedReviews() {
-        val likedReviews = likeManager.getLikedReviews()
-        Log.d("LikesFragment", "Loaded ${likedReviews.size} liked reviews")
+        likeManager.getLikedReviews { likedReviewIds ->
+            activity?.runOnUiThread {
+                Log.d("LikesFragment", "Loaded ${likedReviewIds.size} liked review IDs")
 
-        val reviewsRecycler = requireView().findViewById<RecyclerView>(R.id.liked_reviews_recycler)
+                val reviewsRecycler = requireView().findViewById<RecyclerView>(R.id.liked_reviews_recycler)
 
-        if (likedReviews.isEmpty()) {
-            reviewsEmptyState.isVisible = true
-            reviewsRecycler.isVisible = false
-        } else {
-            reviewsEmptyState.isVisible = false
-            reviewsRecycler.isVisible = true
+                if (likedReviewIds.isEmpty()) {
+                    reviewsEmptyState.isVisible = true
+                    reviewsRecycler.isVisible = false
+                } else {
+                    // Fetch actual review details for the liked review IDs
+                    reviewManager.getReviews { allReviews ->
+                        activity?.runOnUiThread {
+                            val likedReviews = allReviews.filter { review ->
+                                likedReviewIds.contains(review.id)
+                            }
 
-            val adapter = LikedReviewsAdapter(likedReviews) { review ->
-                navigateToReviewDetail(review)
+                            reviewsEmptyState.isVisible = false
+                            reviewsRecycler.isVisible = true
+
+                            val adapter = LikedReviewsAdapter(likedReviews) { review ->
+                                navigateToReviewDetail(review)
+                            }
+                            reviewsRecycler.adapter = adapter
+                        }
+                    }
+                }
             }
-            reviewsRecycler.adapter = adapter
         }
     }
 
     private fun loadLikedLists() {
-        val likedLists = likeManager.getLikedLists()
-        Log.d("LikesFragment", "Loaded ${likedLists.size} liked lists")
+        likeManager.getLikedLists { likedListIds ->
+            activity?.runOnUiThread {
+                Log.d("LikesFragment", "Loaded ${likedListIds.size} liked list IDs")
 
-        val listsRecycler = requireView().findViewById<RecyclerView>(R.id.liked_lists_recycler)
+                val listsRecycler = requireView().findViewById<RecyclerView>(R.id.liked_lists_recycler)
 
-        if (likedLists.isEmpty()) {
-            listsEmptyState.isVisible = true
-            listsRecycler.isVisible = false
-        } else {
-            listsEmptyState.isVisible = false
-            listsRecycler.isVisible = true
+                if (likedListIds.isEmpty()) {
+                    listsEmptyState.isVisible = true
+                    listsRecycler.isVisible = false
+                } else {
+                    // Fetch actual list details for the liked list IDs
+                    listManager.getLists { allLists ->
+                        activity?.runOnUiThread {
+                            val likedLists = allLists.filter { list ->
+                                likedListIds.contains(list.id)
+                            }
 
-            val adapter = LikedListsAdapter(likedLists) { list ->
-                navigateToListDetail(list)
+                            listsEmptyState.isVisible = false
+                            listsRecycler.isVisible = true
+
+                            val adapter = LikedListsAdapter(likedLists) { list ->
+                                navigateToListDetail(list)
+                            }
+                            listsRecycler.adapter = adapter
+                        }
+                    }
+                }
             }
-            listsRecycler.adapter = adapter
         }
     }
 

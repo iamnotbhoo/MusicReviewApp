@@ -33,7 +33,7 @@
                 android:id="@+id/list_creator"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="by Creator"
+                android:text="@string/by_creator"
                 android:textColor="#666666"
                 android:textSize="14sp" />
 
@@ -70,7 +70,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="List description"
+            android:text="@string/list_description"
             android:textColor="#000000"
             android:textSize="14sp" />
 
@@ -78,7 +78,7 @@
             android:id="@+id/like_count"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="0 likes"
+            android:text="@string/_0_likes"
             android:textColor="#666666"
             android:textSize="12sp" />
 

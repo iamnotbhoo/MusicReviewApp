@@ -9,19 +9,24 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.widget.ImageViewCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.launch
 import student.projects.musicreviewapp.R
 import student.projects.musicreviewapp.models.Music
 import student.projects.musicreviewapp.models.Review
-import student.projects.musicreviewapp.auth.ReviewManager
+import student.projects.musicreviewapp.repositories.FirebaseRepository
 
 class UserAlbumsFragment : Fragment() {
 
     private lateinit var albumsAdapter: UserAlbumsAdapter
-    private lateinit var reviewManager: ReviewManager
+    private val repository = FirebaseRepository()
+    private val auth = FirebaseAuth.getInstance()
+    private val currentUserId get() = auth.currentUser?.uid ?: ""
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -32,7 +37,6 @@ class UserAlbumsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        reviewManager = ReviewManager(requireContext())
 
         setupViews(view)
         loadUserAlbums()
@@ -62,9 +66,9 @@ class UserAlbumsFragment : Fragment() {
     private fun navigateToReviewDetail(userAlbum: UserAlbum) {
         val review = Review(
             id = userAlbum.reviewId,
-            userId = "1",
-            userName = "iamnotbhoo",
-            userPhotoUrl = null,
+            userId = currentUserId,
+            userName = getUserName(), // Implement this method
+            userPhotoUrl = getUserPhotoUrl(), // Implement this method
             content = userAlbum.reviewContent,
             timestamp = userAlbum.timestamp,
             musicId = userAlbum.music.id,
@@ -73,7 +77,8 @@ class UserAlbumsFragment : Fragment() {
             musicCoverUrl = userAlbum.music.coverImage,
             rating = userAlbum.userRating,
             tags = emptyList(),
-            liked = userAlbum.isLiked
+            liked = userAlbum.isLiked,
+            likes = userAlbum.likes
         )
 
         val bundle = Bundle().apply {
@@ -83,36 +88,57 @@ class UserAlbumsFragment : Fragment() {
     }
 
     private fun loadUserAlbums() {
-        // Get actual reviews from ReviewManager
-        val userReviews = reviewManager.getReviews()
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val reviews = repository.getReviewsByUser(currentUserId)
 
-        // Convert reviews to UserAlbum objects
-        val userAlbums = userReviews.map { review ->
-            UserAlbum(
-                music = Music(
-                    id = review.musicId,
-                    title = review.musicTitle,
-                    artist = "", // You might want to store artist in review
-                    album = review.musicTitle,
-                    releaseYear = review.musicYear.toIntOrNull() ?: 0,
-                    genre = "",
-                    coverImage = review.musicCoverUrl ?: "",
-                    averageRating = review.rating.toDouble(),
-                    reviewCount = 1
-                ),
-                userRating = review.rating,
-                hasReview = review.content.isNotEmpty(),
-                isLiked = review.liked,
-                reviewId = review.id,
-                reviewContent = review.content,
-                timestamp = review.timestamp
-            )
+                // Convert reviews to UserAlbum objects
+                val userAlbums = reviews.map { review ->
+                    UserAlbum(
+                        music = Music(
+                            id = review.musicId,
+                            title = review.musicTitle,
+                            artist = getArtistFromReview(review), // You need to implement this
+                            album = review.musicTitle,
+                            releaseYear = review.musicYear.toIntOrNull() ?: 0,
+                            genre = "",
+                            coverImage = review.musicCoverUrl ?: "",
+                            averageRating = review.rating.toDouble(),
+                            reviewCount = 1
+                        ),
+                        userRating = review.rating,
+                        hasReview = review.content.isNotEmpty(),
+                        isLiked = review.liked,
+                        reviewId = review.id,
+                        reviewContent = review.content,
+                        timestamp = review.timestamp,
+                        likes = review.likes
+                    )
+                }
+
+                // Sort by timestamp (newest first)
+                val sortedAlbums = userAlbums.sortedByDescending { it.timestamp }
+                albumsAdapter.submitList(sortedAlbums)
+            } catch (e: Exception) {
+                showToast("Failed to load your albums")
+            }
         }
-
-        albumsAdapter.submitList(userAlbums)
     }
 
-    // Update UserAlbum data class to include review info
+    private fun getArtistFromReview(review: Review): String {
+        // Extract artist from review data
+        // This depends on how you store artist information in your Review model
+        return review.musicArtist ?: "Unknown Artist"
+    }
+
+    private fun getUserName(): String {
+        return auth.currentUser?.displayName ?: "User"
+    }
+
+    private fun getUserPhotoUrl(): String? {
+        return auth.currentUser?.photoUrl?.toString()
+    }
+
     data class UserAlbum(
         val music: Music,
         val userRating: Int,
@@ -120,13 +146,13 @@ class UserAlbumsFragment : Fragment() {
         val isLiked: Boolean,
         val reviewId: String,
         val reviewContent: String,
-        val timestamp: String
+        val timestamp: String,
+        val likes: Int = 0
     )
 
     class UserAlbumsAdapter : RecyclerView.Adapter<UserAlbumsAdapter.AlbumViewHolder>() {
         private var albums = listOf<UserAlbum>()
 
-        // ADDED: Click listener property
         var onAlbumClick: ((UserAlbum) -> Unit)? = null
 
         class AlbumViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -158,7 +184,6 @@ class UserAlbumsFragment : Fragment() {
                     holder.albumCover.setImageResource(R.drawable.album_placeholder)
                 }
                 music.coverImage.startsWith("http") -> {
-                    // Load from HTTP/HTTPS URL
                     Glide.with(holder.itemView.context)
                         .load(music.coverImage)
                         .placeholder(R.drawable.album_placeholder)
@@ -167,7 +192,6 @@ class UserAlbumsFragment : Fragment() {
                         .into(holder.albumCover)
                 }
                 else -> {
-                    // Try as local resource
                     try {
                         val resourceId = holder.itemView.context.resources.getIdentifier(
                             music.coverImage,
@@ -208,10 +232,10 @@ class UserAlbumsFragment : Fragment() {
                 // Toggle like state
                 val newLiked = !userAlbum.isLiked
                 updateLikeIcon(holder, newLiked)
-                // In a real app, you'd update this in your database
+                // Note: You'd need to update this in your repository
+                // repository.toggleReviewLike(currentUserId, userAlbum.reviewId, newLiked)
             }
 
-            // CHANGED: Album click to navigate to review detail
             holder.itemView.setOnClickListener {
                 onAlbumClick?.invoke(userAlbum)
             }
@@ -243,5 +267,14 @@ class UserAlbumsFragment : Fragment() {
             albums = newAlbums
             notifyDataSetChanged()
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        loadUserAlbums()
+    }
+
+    private fun showToast(message: String) {
+        android.widget.Toast.makeText(requireContext(), message, android.widget.Toast.LENGTH_SHORT).show()
     }
 }

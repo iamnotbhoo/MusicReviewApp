@@ -21,7 +21,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Settings"
+            android:text="@string/settings"
             android:textColor="#212121"
             android:textSize="20sp"
             android:textStyle="bold" />
@@ -56,7 +56,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="ACCOUNT"
+                android:text="@string/account"
                 android:textColor="#9E9E9E"
                 android:textSize="12sp"
                 android:textStyle="bold"
@@ -83,14 +83,14 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Sign out"
+                    android:text="@string/sign_out"
                     android:textColor="#212121"
                     android:textSize="16sp" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="iamnotbhoo"
+                    android:text="@string/iamnotbhoo"
                     android:textColor="#9E9E9E"
                     android:textSize="14sp"
                     android:layout_marginEnd="8dp" />
@@ -100,7 +100,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="PROFILE"
+                android:text="@string/profile"
                 android:textColor="#9E9E9E"
                 android:textSize="12sp"
                 android:textStyle="bold"
@@ -127,7 +127,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Username"
+                    android:text="@string/username"
                     android:textColor="#212121"
                     android:textSize="16sp" />
 
@@ -135,7 +135,7 @@
                     android:id="@+id/current_username"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="iamnotbhoo"
+                    android:text="@string/iamnotbhoo"
                     android:textColor="#9E9E9E"
                     android:textSize="14sp"
                     android:layout_marginEnd="8dp" />
@@ -164,7 +164,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Location"
+                    android:text="@string/location"
                     android:textColor="#212121"
                     android:textSize="16sp" />
 
@@ -172,7 +172,7 @@
                     android:id="@+id/current_location"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Gotham"
+                    android:text="@string/gotham"
                     android:textColor="#9E9E9E"
                     android:textSize="14sp"
                     android:layout_marginEnd="8dp" />
@@ -201,7 +201,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Bio"
+                    android:text="@string/bio"
                     android:textColor="#212121"
                     android:textSize="16sp" />
 
@@ -209,7 +209,7 @@
                     android:id="@+id/current_bio"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="YuCk"
+                    android:text="@string/yuck"
                     android:textColor="#9E9E9E"
                     android:textSize="14sp"
                     android:layout_marginEnd="8dp" />
@@ -238,7 +238,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Pronoun"
+                    android:text="@string/pronoun"
                     android:textColor="#212121"
                     android:textSize="16sp" />
 
@@ -246,7 +246,7 @@
                     android:id="@+id/current_pronoun"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="He / his"
+                    android:text="@string/he_his"
                     android:textColor="#9E9E9E"
                     android:textSize="14sp"
                     android:layout_marginEnd="8dp" />
@@ -275,7 +275,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="URL"
+                    android:text="@string/url"
                     android:textColor="#212121"
                     android:textSize="16sp" />
 
@@ -283,7 +283,7 @@
                     android:id="@+id/current_url"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="iamnotbhoo.co.za"
+                    android:text="@string/iamnotbhoo_co_za"
                     android:textColor="#9E9E9E"
                     android:textSize="14sp"
                     android:layout_marginEnd="8dp" />
@@ -299,7 +299,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="FAVORITES"
+                android:text="@string/favorites"
                 android:textColor="#9E9E9E"
                 android:textSize="12sp"
                 android:textStyle="bold"
@@ -326,7 +326,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Favorite Albums"
+                    android:text="@string/favorite_albums"
                     android:textColor="#212121"
                     android:textSize="16sp" />
 
@@ -341,7 +341,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="AVATAR"
+                android:text="@string/avatar"
                 android:textColor="#9E9E9E"
                 android:textSize="12sp"
                 android:textStyle="bold"
@@ -368,9 +368,59 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Change Avatar"
+                    android:text="@string/change_avatar"
                     android:textColor="#212121"
                     android:textSize="16sp" />
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/ic_chevron_right"
+                    app:tint="#9E9E9E" />
+            </LinearLayout>
+            <!-- Language Section -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/language"
+                android:textColor="#9E9E9E"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:paddingStart="24dp"
+                android:paddingEnd="24dp"
+                android:paddingTop="24dp"
+                android:paddingBottom="8dp"
+                android:letterSpacing="0.05" />
+
+            <!-- Language Option -->
+            <LinearLayout
+                android:id="@+id/language_option"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingStart="24dp"
+                android:paddingEnd="24dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Language"
+                    android:textColor="#212121"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/current_language"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/english"
+                    android:textColor="#9E9E9E"
+                    android:textSize="14sp"
+                    android:layout_marginEnd="8dp" />
 
                 <ImageView
                     android:layout_width="16dp"

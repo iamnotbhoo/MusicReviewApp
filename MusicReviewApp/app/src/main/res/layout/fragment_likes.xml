@@ -34,7 +34,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Likes"
+                android:text="@string/likes"
                 android:textColor="@android:color/white"
                 android:textSize="20sp"
                 android:textStyle="bold"
@@ -68,7 +68,7 @@
                         android:id="@+id/tab_albums"
                         android:layout_width="wrap_content"
                         android:layout_height="36dp"
-                        android:text="ALBUMS"
+                        android:text="@string/albums"
                         android:textColor="@android:color/white"
                         android:textSize="12sp"
                         android:textStyle="bold"
@@ -96,7 +96,7 @@
                         android:id="@+id/tab_reviews"
                         android:layout_width="wrap_content"
                         android:layout_height="36dp"
-                        android:text="REVIEWS"
+                        android:text="@string/reviews"
                         android:textColor="@android:color/white"
                         android:textSize="12sp"
                         android:textStyle="bold"
@@ -124,7 +124,7 @@
                         android:id="@+id/tab_lists"
                         android:layout_width="wrap_content"
                         android:layout_height="36dp"
-                        android:text="LISTS"
+                        android:text="@string/lists"
                         android:textColor="@android:color/white"
                         android:textSize="12sp"
                         android:textStyle="bold"
@@ -177,14 +177,14 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="No liked albums yet"
+                        android:text="@string/no_liked_albums_yet"
                         android:textSize="16sp"
                         android:textColor="#666666" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Albums you like will appear here"
+                        android:text="@string/albums_you_like_will_appear_here"
                         android:textSize="14sp"
                         android:textColor="#999999"
                         android:layout_marginTop="8dp" />
@@ -226,14 +226,14 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="No liked reviews yet"
+                        android:text="@string/no_liked_reviews_yet"
                         android:textSize="16sp"
                         android:textColor="#666666" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Reviews you like will appear here"
+                        android:text="@string/reviews_you_like_will_appear_here"
                         android:textSize="14sp"
                         android:textColor="#999999"
                         android:layout_marginTop="8dp" />
@@ -275,14 +275,14 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="No liked lists yet"
+                        android:text="@string/no_liked_lists_yet"
                         android:textSize="16sp"
                         android:textColor="#666666" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Lists you like will appear here"
+                        android:text="@string/lists_you_like_will_appear_here"
                         android:textSize="14sp"
                         android:textColor="#999999"
                         android:layout_marginTop="8dp" />

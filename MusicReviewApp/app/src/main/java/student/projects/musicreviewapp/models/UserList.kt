@@ -7,12 +7,15 @@ import kotlinx.parcelize.Parcelize
 data class UserList(
     val id: String,
     val name: String,
-    val description: String = "",
-    val albums: List<Music> = emptyList(),
-    val tags: List<String> = emptyList(),
-    val createdAt: String = "",
-    val isPublic: Boolean = true,
-    val creator: String = "",
-    val likes: Int = 0,
-    val liked: Boolean = false
-) : Parcelable
+    val description: String,
+    val albums: MutableList<Music>,
+    val tags: List<String>,
+    val createdAt: String,
+    val creator: String,
+    val isPublic: Boolean,
+    val likes: Int,
+    val liked: Boolean // Add this field
+) : Parcelable {
+    // No-argument constructor for Firestore
+    constructor() : this("", "", "", mutableListOf(), emptyList(), "", "", true, 0, false)
+}

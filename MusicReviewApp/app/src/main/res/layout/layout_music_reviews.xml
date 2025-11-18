@@ -9,7 +9,7 @@
         android:id="@+id/no_reviews_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Write the first review!"
+        android:text="@string/write_the_first_review"
         android:textSize="14sp"
         android:textColor="@color/grey_400"
         android:paddingBottom="16dp" />
@@ -35,7 +35,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end"
-        android:text="Submit Review"
+        android:text="@string/submit_review"
         android:textColor="@color/white"
         android:background="@color/grey_700"
         android:padding="8dp"

@@ -33,7 +33,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Username"
+                android:text="@string/username"
                 android:textSize="14sp"
                 android:textColor="@color/white"
                 android:textStyle="bold"
@@ -44,7 +44,7 @@
                 android:id="@+id/compact_timestamp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Just now"
+                android:text="@string/just_now"
                 android:textSize="12sp"
                 android:textColor="@color/grey_400" />
 
@@ -66,7 +66,7 @@
             android:id="@+id/compact_review_content"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Review content goes here..."
+            android:text="@string/review_content_goes_here"
             android:textSize="12sp"
             android:textColor="@color/grey_400"
             android:paddingTop="4dp" />

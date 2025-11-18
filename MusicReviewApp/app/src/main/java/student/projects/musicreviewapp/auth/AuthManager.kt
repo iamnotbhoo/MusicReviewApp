@@ -1,84 +1,60 @@
 package student.projects.musicreviewapp.auth
 
-import android.content.Context
-import android.content.SharedPreferences
+import com.google.firebase.auth.FirebaseAuth
 
-class AuthManager(private val context: Context) {
-    private val sharedPreferences: SharedPreferences = context.getSharedPreferences("MusicReviewApp", Context.MODE_PRIVATE)
+class AuthManager {
 
-    companion object {
-        private const val KEY_IS_LOGGED_IN = "is_logged_in"
-        private const val KEY_USER_EMAIL = "user_email"
-        private const val KEY_USER_NAME = "user_name"
-        private const val KEY_USER_PASSWORD = "user_password_" // Prefix for storing passwords
-    }
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 
-    fun signUp(email: String, password: String, username: String): Boolean {
+    fun signUp(email: String, password: String, username: String, onResult: (Boolean, String?) -> Unit) {
         if (email.isEmpty() || password.isEmpty() || username.isEmpty()) {
-            return false
+            onResult(false, "Email, password, or username cannot be empty")
+            return
         }
 
-        // Check if user already exists
-        if (sharedPreferences.contains("${KEY_USER_PASSWORD}$email")) {
-            return false
-        }
-
-        with(sharedPreferences.edit()) {
-            putBoolean(KEY_IS_LOGGED_IN, true)
-            putString(KEY_USER_EMAIL, email)
-            putString(KEY_USER_NAME, username)
-            // Store password with email as key
-            putString("${KEY_USER_PASSWORD}$email", password)
-            apply()
-        }
-
-        return true
+        auth.createUserWithEmailAndPassword(email, password)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    onResult(true, null)
+                } else {
+                    onResult(false, task.exception?.message)
+                }
+            }
     }
 
-    // Add the missing signIn method
-    fun signIn(email: String, password: String): Boolean {
+    fun signIn(email: String, password: String, onResult: (Boolean, String?) -> Unit) {
         if (email.isEmpty() || password.isEmpty()) {
-            return false
+            onResult(false, "Email or password cannot be empty")
+            return
         }
 
-        // Retrieve stored password for this email
-        val storedPassword = sharedPreferences.getString("${KEY_USER_PASSWORD}$email", null)
-
-        // Check if password matches
-        if (storedPassword == password) {
-            // Successful login
-            with(sharedPreferences.edit()) {
-                putBoolean(KEY_IS_LOGGED_IN, true)
-                putString(KEY_USER_EMAIL, email)
-                // Get the username from stored data or use email prefix as fallback
-                val username = sharedPreferences.getString(KEY_USER_NAME, email.split("@")[0])
-                putString(KEY_USER_NAME, username)
-                apply()
+        auth.signInWithEmailAndPassword(email, password)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    onResult(true, null)
+                } else {
+                    onResult(false, task.exception?.message)
+                }
             }
-            return true
-        }
-
-        return false
     }
 
     fun isLoggedIn(): Boolean {
-        return sharedPreferences.getBoolean(KEY_IS_LOGGED_IN, false)
+        return auth.currentUser != null
     }
 
     fun getCurrentUser(): String? {
-        return sharedPreferences.getString(KEY_USER_NAME, null)
+        return auth.currentUser?.displayName
     }
 
     fun getCurrentEmail(): String? {
-        return sharedPreferences.getString(KEY_USER_EMAIL, null)
+        return auth.currentUser?.email
+    }
+
+    fun getCurrentUid(): String? {
+        return auth.currentUser?.uid
     }
 
     fun logout() {
-        with(sharedPreferences.edit()) {
-            putBoolean(KEY_IS_LOGGED_IN, false)
-            remove(KEY_USER_EMAIL)
-            remove(KEY_USER_NAME)
-            apply()
-        }
+        auth.signOut()
     }
 }

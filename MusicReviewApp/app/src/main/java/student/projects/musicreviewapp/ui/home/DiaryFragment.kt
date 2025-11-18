@@ -16,7 +16,7 @@ import com.bumptech.glide.Glide
 import student.projects.musicreviewapp.R
 import student.projects.musicreviewapp.models.Music
 import student.projects.musicreviewapp.models.Review
-import student.projects.musicreviewapp.auth.ReviewManager
+import student.projects.musicreviewapp.auth.FirebaseReviewManager
 
 // Move DiaryEntry data class outside of DiaryFragment
 data class DiaryEntry(
@@ -34,7 +34,7 @@ data class DiaryEntry(
 class DiaryFragment : Fragment() {
 
     private lateinit var diaryAdapter: DiaryAdapter
-    private lateinit var reviewManager: ReviewManager
+    private lateinit var reviewManager: FirebaseReviewManager
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -45,7 +45,7 @@ class DiaryFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        reviewManager = ReviewManager(requireContext())
+        reviewManager = FirebaseReviewManager(requireContext())
 
         setupViews(view)
         loadDiaryEntries()
@@ -138,10 +138,13 @@ class DiaryFragment : Fragment() {
     }
 
     private fun loadDiaryEntries() {
-        // Get actual reviews and organize them by date
-        val userReviews = reviewManager.getReviews()
-        val diaryEntries = organizeReviewsByDate(userReviews)
-        diaryAdapter.submitList(diaryEntries)
+        // Get actual reviews from Firebase and organize them by date
+        reviewManager.getReviews { reviews ->
+            activity?.runOnUiThread {
+                val diaryEntries = organizeReviewsByDate(reviews)
+                diaryAdapter.submitList(diaryEntries)
+            }
+        }
     }
 
     private fun organizeReviewsByDate(reviews: List<Review>): List<DiaryEntry> {

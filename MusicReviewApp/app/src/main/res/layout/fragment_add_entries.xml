@@ -29,7 +29,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:text="Add Albums"
+            android:text="@string/add_albums"
             android:textColor="#000000"
             android:textSize="18sp"
             android:textStyle="bold" />
@@ -41,7 +41,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
-            android:text="Done"
+            android:text="@string/done"
             android:textColor="#000000"
             android:textSize="16sp" />
 
@@ -81,7 +81,7 @@
         android:id="@+id/recent_searches_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="RECENT SEARCHES"
+        android:text="@string/recent_searches"
         android:textColor="#555555"
         android:textSize="14sp"
         android:textStyle="bold"

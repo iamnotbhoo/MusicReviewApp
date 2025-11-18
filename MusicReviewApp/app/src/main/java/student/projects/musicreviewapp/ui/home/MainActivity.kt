@@ -23,7 +23,7 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        authManager = AuthManager(this)
+        authManager = AuthManager()
         navController = findNavController(R.id.nav_host_fragment)
 
         setupNavigation()

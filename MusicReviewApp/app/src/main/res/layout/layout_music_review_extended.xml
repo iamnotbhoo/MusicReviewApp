@@ -28,7 +28,7 @@
             android:id="@+id/extended_music_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Music Title"
+            android:text="@string/music_title"
             android:textSize="16sp"
             android:textColor="@color/white"
             android:textStyle="bold"
@@ -39,7 +39,7 @@
             android:id="@+id/extended_timestamp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Just now"
+            android:text="@string/just_now"
             android:textSize="12sp"
             android:textColor="@color/grey_400" />
 
@@ -47,7 +47,7 @@
             android:id="@+id/extended_review_content"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Extended review content goes here..."
+            android:text="@string/extended_review_content_goes_here"
             android:textSize="14sp"
             android:textColor="@color/grey_400"
             android:paddingTop="8dp" />

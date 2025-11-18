@@ -22,7 +22,7 @@
             android:id="@+id/list_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="List Name"
+            android:text="@string/list_name"
             android:textSize="16sp"
             android:textColor="#000000"/>
 
@@ -30,7 +30,7 @@
             android:id="@+id/list_info"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="0 albums"
+            android:text="@string/_0_albums"
             android:textSize="12sp"
             android:textColor="#666666"/>
 

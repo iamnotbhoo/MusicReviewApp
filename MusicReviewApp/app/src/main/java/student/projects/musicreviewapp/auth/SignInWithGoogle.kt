@@ -5,7 +5,6 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.LinearLayout
 import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -23,6 +22,9 @@ class SignInWithGoogle @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ) : LinearLayout(context, attrs, defStyleAttr) {
 
+    var onGoogleSignInSuccess: (() -> Unit)? = null
+    var onGoogleSignInFailure: ((String) -> Unit)? = null
+
     private val auth = Firebase.auth
     private val db = Firebase.firestore
     private lateinit var googleSignInClient: GoogleSignInClient
@@ -30,19 +32,13 @@ class SignInWithGoogle @JvmOverloads constructor(
 
     init {
         LayoutInflater.from(context).inflate(R.layout.layout_sign_in_google, this, true)
-
-        // Configure Google Sign In
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken("YOUR_WEB_CLIENT_ID") // You need to get this from Firebase console
+            .requestIdToken("502839598328-lt7od3ekspqg5jdcvt9rpa08825llimp.apps.googleusercontent.com")
             .requestEmail()
             .build()
-
         googleSignInClient = GoogleSignIn.getClient(context, gso)
-
         val googleButton = findViewById<MaterialButton>(R.id.google_button)
-        googleButton.setOnClickListener {
-            signInWithGoogle()
-        }
+        googleButton.setOnClickListener { signInWithGoogle() }
     }
 
     fun setSignInLauncher(launcher: ActivityResultLauncher<android.content.Intent>) {
@@ -60,7 +56,7 @@ class SignInWithGoogle @JvmOverloads constructor(
             val account = task.getResult(ApiException::class.java)!!
             firebaseAuthWithGoogle(account.idToken!!)
         } catch (e: ApiException) {
-            println("Google sign in failed: ${e.statusCode}")
+            onGoogleSignInFailure?.invoke("Google sign in failed: ${e.statusCode}")
         }
     }
 
@@ -69,30 +65,27 @@ class SignInWithGoogle @JvmOverloads constructor(
         auth.signInWithCredential(credential)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    // Check if user exists in Firestore
                     checkAndCreateUserInFirestore()
+                    onGoogleSignInSuccess?.invoke()
                 } else {
-                    println("Firebase authentication failed: ${task.exception?.message}")
+                    val message = task.exception?.message ?: "Google Sign-In failed"
+                    onGoogleSignInFailure?.invoke(message)
                 }
             }
     }
 
     private fun checkAndCreateUserInFirestore() {
-        val currentUser = auth.currentUser
-        if (currentUser == null) return
-
+        val currentUser = auth.currentUser ?: return
         val userRef = db.collection("users").document(currentUser.uid)
-        userRef.get()
-            .addOnSuccessListener { document ->
-                if (!document.exists()) {
-                    addNewUserToDB(currentUser.uid)
-                }
+        userRef.get().addOnSuccessListener { document ->
+            if (!document.exists()) {
+                addNewUserToDB(currentUser.uid)
             }
+        }
     }
 
     private fun addNewUserToDB(uid: String) {
         val currentUser = auth.currentUser ?: return
-
         val userData = hashMapOf(
             "name" to currentUser.displayName,
             "uid" to uid,
@@ -102,14 +95,6 @@ class SignInWithGoogle @JvmOverloads constructor(
             "listened" to emptyList<String>(),
             "favourites" to emptyList<String>()
         )
-
-        db.collection("users").document(uid)
-            .set(userData)
-            .addOnSuccessListener {
-                println("User document created successfully")
-            }
-            .addOnFailureListener { e ->
-                println("Error creating user document: ${e.message}")
-            }
+        db.collection("users").document(uid).set(userData)
     }
 }
